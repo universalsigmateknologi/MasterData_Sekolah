@@ -7,6 +7,7 @@ __pycache__/
 node_modules/
 
 user_flow.md
+ui/
 
 # C extensions
 *.so
