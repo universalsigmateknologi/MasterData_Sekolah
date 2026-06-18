@@ -34,6 +34,20 @@ class SiswaListView(ListView):
         context['search_query'] = self.request.GET.get('search', '')
         context['status_filter'] = self.request.GET.get('status', '')
         context['jk_filter'] = self.request.GET.get('jenis_kelamin', '')
+
+        # Generate page range for pagination
+        paginator = context['paginator']
+        page_numbers = paginator.page_range
+        current_page = context['page_obj'].number
+        # Show current page and 2 pages before/after, plus first and last pages
+        page_range = []
+        for num in page_numbers:
+            if num <= 3 or num > paginator.num_pages - 3:
+                page_range.append(num)
+            elif abs(num - current_page) <= 2:
+                page_range.append(num)
+        context['page_range'] = page_range
+
         return context
 
 

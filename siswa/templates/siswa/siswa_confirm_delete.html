@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Hapus Siswa{% endblock %}
+
+{% block breadcrumb_active %}Hapus Siswa{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Hapus Siswa</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">Konfirmasi penghapusan data</p>
+    </div>
+    <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-white border border-border-light px-4 py-2.5 rounded-xl hover:bg-neutral-50 transition-all shadow-sm">
+      Kembali
+    </a>
+  </div>
+
+  <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+    <div class="flex items-center gap-3 mb-4">
+      <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.643 5.643a2 2 0 01-2.826-2.826L17 7l4 4-8 8z"/>
+      </svg>
+      <h3 class="font-semibold text-neutral-800 text-lg">Anda yakin ingin menghapus?</h3>
+    </div>
+
+    <p class="text-neutral-600 mb-4">
+      Data siswa <strong>{{ object.nama_lengkap }}</strong> dengan NISN <strong>{{ object.nisn|default:'-' }}</strong> akan dihapus secara permanen.
+    </p>
+
+    <form method="post" class="flex items-center gap-3">
+      {% csrf_token %}
+      <button type="submit" class="text-xs font-medium text-white bg-red-600 px-4 py-2.5 rounded-xl hover:bg-red-700 transition-all shadow-sm">
+        Ya, Hapus
+      </button>
+      <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">
+        Batal
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}
