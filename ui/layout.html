@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Ultra Minimalist</title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            'surface': '#fafafa',
+            'surface-alt': '#f5f5f5',
+            'border-light': '#ebebeb',
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.35s ease-out',
+            'slide-down': 'slideDown 0.25s ease-out',
+            'scale-in': 'scaleIn 0.2s ease-out',
+            'pulse-soft': 'pulseSoft 2s infinite',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            slideDown: { '0%': { opacity: '0', transform: 'translateY(-8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            scaleIn: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+            pulseSoft: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.6' } },
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #fafafa;
+    }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+    .sidebar-transition {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+    .nav-item.active { background-color: #f0f0f0; font-weight: 500; }
+    .nav-item.active .nav-indicator { opacity: 1; }
+    .chart-bar {
+      transition: background-color 0.2s;
+      min-width: 4px;
+      animation: slideUp 0.4s ease-out forwards;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  </style>
+</head>
+<body class="text-neutral-800 antialiased min-h-screen flex overflow-x-hidden">
+
+  <!-- OVERLAY (Mobile) -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 hidden md:hidden sidebar-transition opacity-0" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-border-light flex flex-col sidebar-transition -translate-x-full md:translate-x-0 md:sticky md:top-0 md:h-screen md:z-30 shadow-sm md:shadow-none">
+    <!-- Sidebar Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-border-light flex-shrink-0">
+      <a href="#" class="flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </div>
+        <span class="font-semibold text-lg tracking-tight text-neutral-900">Minima</span>
+      </a>
+      <button onclick="closeSidebar()" class="md:hidden p-1.5 rounded-lg hover:bg-neutral-100 transition-colors text-neutral-500">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Navigation Scrollable -->
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <a href="#" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-700 hover:bg-neutral-100 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg><span>Dashboard</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg><span>Analytics</span><span class="ml-auto text-[10px] font-medium text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded-full">Baru</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg><span>Pengguna</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg><span>Pesanan</span><span class="ml-auto bg-neutral-900 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">12</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span>Pesan</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span>Laporan</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg><span>Integrasi</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg><span>Dokumentasi</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16M9 11h6"/></svg><span>Log Aktivitas</span></a>
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>Pengaturan</span></a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="border-t border-border-light p-4 flex-shrink-0">
+      <div class="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer">
+        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&q=80" alt="User avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-neutral-200 shrink-0" loading="lazy">
+        <div class="flex-1 min-w-0"><p class="text-sm font-medium text-neutral-800 truncate">Alex Putra</p><p class="text-xs text-neutral-400 truncate">admin@minima.id</p></div>
+        <button class="p-1 rounded-lg hover:bg-neutral-200 transition-colors text-neutral-400" title="Keluar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col min-h-screen w-full overflow-x-hidden">
+    <!-- Top Header -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border-light px-4 md:px-8 py-3.5 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <button id="hamburgerBtn" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <div class="hidden sm:flex items-center gap-1.5 text-sm text-neutral-400"><span class="text-neutral-500">Dashboard</span><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg><span class="text-neutral-800 font-medium">Ringkasan</span></div>
+      </div>
+      <div class="flex items-center gap-2 md:gap-3">
+        <div class="hidden sm:flex items-center bg-neutral-100 rounded-xl px-3 py-2 gap-2 transition-all focus-within:ring-2 focus-within:ring-neutral-300 focus-within:bg-white"><svg class="w-4 h-4 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><input type="text" placeholder="Cari..." class="bg-transparent text-sm outline-none w-28 lg:w-40 text-neutral-700 placeholder-neutral-400"></div>
+        <button class="sm:hidden p-2 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
+        <div class="relative">
+          <button id="notifBtn" onclick="toggleNotifications()" class="p-2 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-500 relative"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg><span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span></button>
+          <div id="notifDropdown" class="absolute right-2 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-border-light p-3 z-50 hidden animate-scale-in origin-top-right"><div class="flex items-center justify-between mb-2"><span class="text-sm font-semibold text-neutral-800">Notifikasi</span><span class="text-xs text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">3 baru</span></div><div class="space-y-1 max-h-64 overflow-y-auto"><div class="p-2.5 rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer"><p class="text-xs font-medium text-neutral-700">Pesanan baru #INV-2024</p><p class="text-[11px] text-neutral-400 mt-0.5">2 menit yang lalu</p></div><div class="p-2.5 rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer bg-neutral-50"><p class="text-xs font-medium text-neutral-700">Pembayaran berhasil dikonfirmasi</p><p class="text-[11px] text-neutral-400 mt-0.5">15 menit yang lalu</p></div><div class="p-2.5 rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer"><p class="text-xs font-medium text-neutral-700">Pengguna baru mendaftar</p><p class="text-[11px] text-neutral-400 mt-0.5">1 jam yang lalu</p></div></div><a href="#" class="block text-center text-xs font-medium text-neutral-600 mt-2 py-2 rounded-xl hover:bg-neutral-100 transition-colors">Lihat semua</a></div>
+        </div>
+        <button id="themeToggle" onclick="toggleTheme()" class="p-2 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-500"><svg id="themeIconLight" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><svg id="themeIconDark" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg></button>
+        <div class="hidden md:flex items-center gap-2.5 cursor-pointer pl-2"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&q=80" alt="User" class="w-8 h-8 rounded-full object-cover ring-2 ring-neutral-200 shrink-0" loading="lazy"></div>
+      </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 animate-fade-in">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div><h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Ringkasan</h1><p class="text-sm text-neutral-400 mt-0.5">Selamat datang kembali, Alex. Berikut update hari ini.</p></div>
+        <div class="flex items-center gap-2"><button class="text-xs font-medium text-neutral-600 bg-white border border-border-light px-4 py-2.5 rounded-xl hover:bg-neutral-50 transition-all shadow-sm">Unduh Laporan</button><button class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">+ Tambah Baru</button></div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm animate-slide-up"><div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+12.5%</span></div><p class="text-2xl font-bold text-neutral-900">Rp 24.8<span class="text-lg font-medium text-neutral-400">jt</span></p><p class="text-sm text-neutral-400 mt-1">Pendapatan Bulan Ini</p></div>
+        <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm animate-slide-up"><div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg></div><span class="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">-3.1%</span></div><p class="text-2xl font-bold text-neutral-900">1,247</p><p class="text-sm text-neutral-400 mt-1">Total Pesanan</p></div>
+        <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm animate-slide-up"><div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div><span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+8.3%</span></div><p class="text-2xl font-bold text-neutral-900">3,890</p><p class="text-sm text-neutral-400 mt-1">Pengguna Aktif</p></div>
+        <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm animate-slide-up"><div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+2.7%</span></div><p class="text-2xl font-bold text-neutral-900">96.2<span class="text-lg font-medium text-neutral-400">%</span></p><p class="text-sm text-neutral-400 mt-1">Konversi</p></div>
+      </div>
+
+      <!-- Chart + Activity -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-border-light shadow-sm p-5 md:p-6 animate-slide-up">
+          <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <h3 class="font-semibold text-neutral-800 text-base">Tren Pendapatan</h3>
+            <div class="flex items-center gap-1 bg-neutral-100 rounded-xl p-1 text-xs">
+              <button class="tab-btn px-3 py-1.5 rounded-lg font-medium transition-all bg-white shadow-sm text-neutral-800" data-period="week">Minggu</button>
+              <button class="tab-btn px-3 py-1.5 rounded-lg font-medium transition-all text-neutral-500 hover:text-neutral-700" data-period="month">Bulan</button>
+              <button class="tab-btn px-3 py-1.5 rounded-lg font-medium transition-all text-neutral-500 hover:text-neutral-700" data-period="year">Tahun</button>
+            </div>
+          </div>
+          <div class="relative overflow-x-auto">
+            <div id="chart-week" class="chart-set flex items-end gap-2 md:gap-3 h-48 min-w-[300px]">
+              <div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[45%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[28%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[62%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[38%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[55%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[72%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[48%]"></div>
+            </div>
+            <div id="chart-month" class="chart-set hidden flex items-end gap-0.5 md:gap-1 h-48 min-w-[600px]">
+              <div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[42%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[55%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[38%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[65%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[48%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[72%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[58%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[80%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[62%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[45%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[70%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[55%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[68%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[50%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[75%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[60%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[82%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[55%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[48%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[68%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[72%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[58%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[80%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[62%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[45%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[70%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[55%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[68%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[50%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[75%]"></div>
+            </div>
+            <div id="chart-year" class="chart-set hidden flex items-end gap-2 md:gap-3 h-48 min-w-[400px]">
+              <div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[65%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[48%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[72%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[58%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[80%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[62%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[45%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[70%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[55%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[68%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[50%]"></div><div class="flex-1 bg-neutral-900 rounded-t-lg chart-bar h-[75%]"></div>
+            </div>
+          </div>
+          <div class="overflow-x-auto mt-3">
+            <div id="labels-week" class="label-set flex justify-between text-xs text-neutral-400 font-medium px-1 min-w-[300px]"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
+            <div id="labels-month" class="label-set hidden flex justify-between text-xs text-neutral-400 font-medium px-1 min-w-[600px]"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span></div>
+            <div id="labels-year" class="label-set hidden flex justify-between text-xs text-neutral-400 font-medium px-1 min-w-[400px]"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Mei</span><span>Jun</span><span>Jul</span><span>Agu</span><span>Sep</span><span>Okt</span><span>Nov</span><span>Des</span></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-border-light shadow-sm p-5 md:p-6 animate-slide-up">
+          <div class="flex items-center justify-between mb-4"><h3 class="font-semibold text-neutral-800 text-base">Aktivitas Terbaru</h3><button class="text-xs text-neutral-500 hover:text-neutral-700 font-medium transition-colors">Lihat semua</button></div>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3"><div class="w-2 h-2 bg-green-500 rounded-full mt-2 shrink-0"></div><div><p class="text-sm font-medium text-neutral-700">Pesanan #INV-2024 selesai</p><p class="text-xs text-neutral-400 mt-0.5">Baru saja</p></div></div>
+            <div class="flex items-start gap-3"><div class="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0"></div><div><p class="text-sm font-medium text-neutral-700">Pengguna baru: <strong>Budi S.</strong></p><p class="text-xs text-neutral-400 mt-0.5">10 menit lalu</p></div></div>
+            <div class="flex items-start gap-3"><div class="w-2 h-2 bg-yellow-500 rounded-full mt-2 shrink-0"></div><div><p class="text-sm font-medium text-neutral-700">Pembayaran tertunda</p><p class="text-xs text-neutral-400 mt-0.5">32 menit lalu</p></div></div>
+            <div class="flex items-start gap-3"><div class="w-2 h-2 bg-purple-500 rounded-full mt-2 shrink-0"></div><div><p class="text-sm font-medium text-neutral-700">Laporan bulanan terkirim</p><p class="text-xs text-neutral-400 mt-0.5">1 jam lalu</p></div></div>
+            <div class="flex items-start gap-3"><div class="w-2 h-2 bg-neutral-400 rounded-full mt-2 shrink-0"></div><div><p class="text-sm font-medium text-neutral-700">Server backup selesai</p><p class="text-xs text-neutral-400 mt-0.5">3 jam lalu</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden animate-slide-up">
+        <div class="flex items-center justify-between p-5 md:p-6 border-b border-border-light"><h3 class="font-semibold text-neutral-800 text-base">Pesanan Terbaru</h3><select class="text-xs font-medium bg-neutral-100 border-0 rounded-xl px-3 py-2 outline-none text-neutral-600 cursor-pointer"><option>Semua Status</option><option>Selesai</option><option>Pending</option><option>Dibatalkan</option></select></div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="bg-neutral-50 text-neutral-500 text-xs font-medium uppercase tracking-wider"><th class="text-left px-6 py-3.5">ID Pesanan</th><th class="text-left px-6 py-3.5 hidden md:table-cell">Pelanggan</th><th class="text-left px-6 py-3.5 hidden sm:table-cell">Tanggal</th><th class="text-left px-6 py-3.5">Jumlah</th><th class="text-left px-6 py-3.5">Status</th></tr></thead>
+            <tbody class="divide-y divide-border-light">
+              <tr class="hover:bg-neutral-50"><td class="px-6 py-4 font-medium text-neutral-800">#INV-2024</td><td class="px-6 py-4 text-neutral-600 hidden md:table-cell">Rina Amelia</td><td class="px-6 py-4 text-neutral-400 hidden sm:table-cell">12 Jun 2024</td><td class="px-6 py-4 font-medium">Rp 1.250.000</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Selesai</span></td></tr>
+              <tr class="hover:bg-neutral-50"><td class="px-6 py-4 font-medium text-neutral-800">#INV-2025</td><td class="px-6 py-4 text-neutral-600 hidden md:table-cell">Doni Prakasa</td><td class="px-6 py-4 text-neutral-400 hidden sm:table-cell">11 Jun 2024</td><td class="px-6 py-4 font-medium">Rp 890.000</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">Pending</span></td></tr>
+              <tr class="hover:bg-neutral-50"><td class="px-6 py-4 font-medium text-neutral-800">#INV-2026</td><td class="px-6 py-4 text-neutral-600 hidden md:table-cell">Sari Dewi</td><td class="px-6 py-4 text-neutral-400 hidden sm:table-cell">10 Jun 2024</td><td class="px-6 py-4 font-medium">Rp 2.100.000</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Selesai</span></td></tr>
+              <tr class="hover:bg-neutral-50"><td class="px-6 py-4 font-medium text-neutral-800">#INV-2027</td><td class="px-6 py-4 text-neutral-600 hidden md:table-cell">Andi Wijaya</td><td class="px-6 py-4 text-neutral-400 hidden sm:table-cell">9 Jun 2024</td><td class="px-6 py-4 font-medium">Rp 450.000</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">Dibatalkan</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between px-6 py-4 border-t border-border-light text-sm"><span class="text-neutral-400">Menampilkan 4 dari 48 pesanan</span><div class="flex items-center gap-1"><button class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-400 disabled:opacity-30" disabled><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button><button class="px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-medium">1</button><button class="px-3 py-1.5 rounded-lg hover:bg-neutral-100 text-neutral-600 text-xs font-medium">2</button><button class="px-3 py-1.5 rounded-lg hover:bg-neutral-100 text-neutral-600 text-xs font-medium">3</button><button class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button></div></div>
+      </div>
+    </div>
+    <footer class="border-t border-border-light px-4 md:px-8 py-4 text-center text-xs text-neutral-400">&copy; 2024 Minima Admin. Dibuat dengan presisi.</footer>
+  </main>
+
+  <script>
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const notifBtn = document.getElementById('notifBtn');
+      const notifDropdown = document.getElementById('notifDropdown');
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const navItems = document.querySelectorAll('.nav-item');
+      let isSidebarOpen = false;
+      let isDarkMode = false;
+
+      window.openSidebar = () => {
+        isSidebarOpen = true;
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden','opacity-0');
+        overlay.classList.add('opacity-100');
+        document.body.style.overflow = 'hidden';
+      };
+      window.closeSidebar = () => {
+        isSidebarOpen = false;
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('opacity-0');
+        overlay.classList.remove('opacity-100');
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+        document.body.style.overflow = '';
+      };
+      window.toggleSidebar = () => isSidebarOpen ? closeSidebar() : openSidebar();
+
+      window.toggleNotifications = (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('hidden');
+      };
+      document.addEventListener('click', (e) => {
+        if (!notifDropdown.contains(e.target) && e.target !== notifBtn && !notifBtn.contains(e.target)) {
+          notifDropdown.classList.add('hidden');
+        }
+      });
+
+
+      window.toggleTheme = () => {
+        isDarkMode = !isDarkMode;
+        if (isDarkMode) {
+          document.body.style.backgroundColor = '#0a0a0a'; document.body.style.color = '#e5e5e5';
+          document.getElementById('themeIconLight').classList.add('hidden');
+          document.getElementById('themeIconDark').classList.remove('hidden');
+          document.querySelectorAll('.bg-white').forEach(el => { el.style.backgroundColor = '#171717'; el.style.borderColor = '#262626'; });
+          document.querySelectorAll('.bg-neutral-50').forEach(el => el.style.backgroundColor = '#1f1f1f');
+          document.querySelectorAll('.bg-neutral-100').forEach(el => el.style.backgroundColor = '#262626');
+          document.querySelectorAll('.text-neutral-800').forEach(el => el.style.color = '#e5e5e5');
+          document.querySelectorAll('.text-neutral-900').forEach(el => el.style.color = '#f5f5f5');
+          document.querySelectorAll('.text-neutral-700').forEach(el => el.style.color = '#d4d4d4');
+          document.querySelectorAll('.text-neutral-600').forEach(el => el.style.color = '#a3a3a3');
+          document.querySelectorAll('.text-neutral-500').forEach(el => el.style.color = '#737373');
+          document.querySelectorAll('.text-neutral-400').forEach(el => el.style.color = '#525252');
+          document.querySelectorAll('.border-border-light').forEach(el => el.style.borderColor = '#262626');
+          document.querySelector('header').style.backgroundColor = 'rgba(23,23,23,0.85)';
+        } else {
+          document.body.style.backgroundColor = '#fafafa'; document.body.style.color = '#262626';
+          document.getElementById('themeIconLight').classList.remove('hidden');
+          document.getElementById('themeIconDark').classList.add('hidden');
+          document.querySelectorAll('.bg-white').forEach(el => { el.style.backgroundColor = ''; el.style.borderColor = ''; });
+          document.querySelectorAll('.bg-neutral-50').forEach(el => el.style.backgroundColor = '');
+          document.querySelectorAll('.bg-neutral-100').forEach(el => el.style.backgroundColor = '');
+          document.querySelectorAll('.text-neutral-800').forEach(el => el.style.color = '');
+          document.querySelectorAll('.text-neutral-900').forEach(el => el.style.color = '');
+          document.querySelectorAll('.text-neutral-700').forEach(el => el.style.color = '');
+          document.querySelectorAll('.text-neutral-600').forEach(el => el.style.color = '');
+          document.querySelectorAll('.text-neutral-500').forEach(el => el.style.color = '');
+          document.querySelectorAll('.text-neutral-400').forEach(el => el.style.color = '');
+          document.querySelectorAll('.border-border-light').forEach(el => el.style.borderColor = '');
+          document.querySelector('header').style.backgroundColor = '';
+        }
+      };
+
+      function switchTab(period) {
+        document.querySelectorAll('.chart-set').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.label-set').forEach(s => s.classList.add('hidden'));
+        document.getElementById('chart-' + period).classList.remove('hidden');
+        document.getElementById('labels-' + period).classList.remove('hidden');
+        tabBtns.forEach(btn => {
+          if (btn.dataset.period === period) {
+            btn.classList.add('bg-white','shadow-sm','text-neutral-800');
+            btn.classList.remove('text-neutral-500','hover:text-neutral-700');
+          } else {
+            btn.classList.remove('bg-white','shadow-sm','text-neutral-800');
+            btn.classList.add('text-neutral-500','hover:text-neutral-700');
+          }
+        });
+      }
+      tabBtns.forEach(btn => btn.addEventListener('click', function() { switchTab(this.dataset.period); }));
+      navItems.forEach(item => item.addEventListener('click', function(e) {
+        e.preventDefault();
+        navItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        if (window.innerWidth < 768) closeSidebar();
+      }));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (isSidebarOpen) closeSidebar(); notifDropdown.classList.add('hidden'); } });
+      window.addEventListener('resize', () => { if (window.innerWidth >= 768 && isSidebarOpen) closeSidebar(); });
+      switchTab('week');
+    })();
+  </script>
+</body>
+</html>
