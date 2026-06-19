@@ -1,5 +1,5 @@
 from django import forms
-from .models import Siswa, DataOrangTua
+from .models import Siswa, DataOrangTua, DokumenSiswa
 
 class SiswaForm(forms.ModelForm):
     class Meta:
@@ -43,4 +43,16 @@ class DataOrangTuaForm(forms.ModelForm):
             'nama_wali': forms.TextInput(attrs={'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300'}),
             'pekerjaan_wali': forms.TextInput(attrs={'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300'}),
             'no_hp_wali': forms.TextInput(attrs={'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300'}),
+        }
+
+
+class DokumenSiswaForm(forms.ModelForm):
+    class Meta:
+        model = DokumenSiswa
+        fields = ['jenis_dokumen', 'nama_dokumen', 'file_dokumen', 'keterangan']
+        widgets = {
+            'jenis_dokumen': forms.Select(attrs={'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300'}),
+            'nama_dokumen': forms.TextInput(attrs={'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300'}),
+            'keterangan': forms.Textarea(attrs={'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300', 'rows': 2}),
+            'file_dokumen': forms.ClearableFileInput(attrs={'class': 'w-full text-sm'}),
         }

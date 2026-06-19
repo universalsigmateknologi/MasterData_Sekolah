@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ siswa.nama_lengkap }}{% endblock %}
+{% block breadcrumb_active %}{{ siswa.nama_lengkap }}{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">{{ siswa.nama_lengkap }}</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">NISN: {{ siswa.nisn|default:'-' }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'siswa:update' siswa.pk %}" class="text-xs font-medium text-neutral-600 bg-white border border-border-light px-4 py-2.5 rounded-xl hover:bg-neutral-50 transition-all shadow-sm">
+        Edit Siswa
+      </a>
+      <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">
+        Kembali
+      </a>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="bg-white rounded-2xl border border-border-light shadow-sm">
+    <div class="flex border-b border-border-light overflow-x-auto">
+      <a href="?tab=identitas" class="px-6 py-4 text-sm font-medium transition-colors {% if active_tab == 'identitas' %}text-neutral-900 border-b-2 border-neutral-900{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Identitas Siswa</a>
+      <a href="?tab=orang_tua" class="px-6 py-4 text-sm font-medium transition-colors {% if active_tab == 'orang_tua' %}text-neutral-900 border-b-2 border-neutral-900{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Orang Tua / Wali</a>
+      <a href="?tab=akademik" class="px-6 py-4 text-sm font-medium transition-colors {% if active_tab == 'akademik' %}text-neutral-900 border-b-2 border-neutral-900{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Akademik</a>
+      <a href="?tab=dokumen" class="px-6 py-4 text-sm font-medium transition-colors {% if active_tab == 'dokumen' %}text-neutral-900 border-b-2 border-neutral-900{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Dokumen</a>
+      <a href="?tab=log" class="px-6 py-4 text-sm font-medium transition-colors {% if active_tab == 'log' %}text-neutral-900 border-b-2 border-neutral-900{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Log Riwayat</a>
+    </div>
+
+    <div class="p-4 md:p-6">
+      <!-- Identitas Siswa -->
+      {% if active_tab == 'identitas' %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-neutral-400">NISN</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.nisn|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">NIK</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.nik|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Nama Lengkap</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.nama_lengkap }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Jenis Kelamin</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.get_jenis_kelamin_display }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Tempat, Tanggal Lahir</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.tempat_lahir }}, {{ siswa.tanggal_lahir|date:'d M Y' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Agama</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.agama|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Golongan Darah</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.golongan_darah|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Status Siswa</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.status_siswa }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Tanggal Masuk</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.tanggal_masuk|date:'d M Y' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Tanggal Keluar</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.tanggal_keluar|date:'d M Y'|default:'-' }}</p>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-xs text-neutral-400">Alamat Tinggal</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.alamat_tinggal }}</p>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-xs text-neutral-400">Catatan Medis</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.catatan_medis|default:'-' }}</p>
+        </div>
+      </div>
+
+      <!-- Orang Tua / Wali -->
+      {% elif active_tab == 'orang_tua' %}
+      {% if siswa.orang_tua %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-neutral-400">Nama Ayah</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.nama_ayah|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Pekerjaan Ayah</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.pekerjaan_ayah|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">No HP Ayah</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.no_hp_ayah|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Nama Ibu</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.nama_ibu|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Pekerjaan Ibu</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.pekerjaan_ibu|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">No HP Ibu</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.no_hp_ibu|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Nama Wali</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.nama_wali|default:'-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-400">Pekerjaan Wali</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.pekerjaan_wali|default:'-' }}</p>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-xs text-neutral-400">No HP Wali</p>
+          <p class="text-sm font-medium text-neutral-800">{{ siswa.orang_tua.no_hp_wali|default:'-' }}</p>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-neutral-400">Data orang tua belum diisi.</p>
+      {% endif %}
+
+      <!-- Akademik -->
+      {% elif active_tab == 'akademik' %}
+      <p class="text-neutral-400">Data akademik akan ditampilkan di sini.</p>
+
+      <!-- Dokumen -->
+      {% elif active_tab == 'dokumen' %}
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h4 class="font-semibold text-neutral-800">Daftar Dokumen</h4>
+          <button type="button" onclick="openModal('modalTambahDokumen')" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
+            Tambah Dokumen
+          </button>
+        </div>
+        {% if dokumen_list %}
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-neutral-50 text-neutral-500 text-xs font-medium uppercase tracking-wider">
+                <th class="text-left px-4 py-3">Jenis</th>
+                <th class="text-left px-4 py-3">Nama</th>
+                <th class="text-left px-4 py-3">Keterangan</th>
+                <th class="text-center px-4 py-3">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border-light">
+              {% for dokumen in dokumen_list %}
+              <tr>
+                <td class="px-4 py-3">{{ dokumen.get_jenis_dokumen_display }}</td>
+                <td class="px-4 py-3">{{ dokumen.nama_dokumen }}</td>
+                <td class="px-4 py-3">{{ dokumen.keterangan|default:'-' }}</td>
+                <td class="px-4 py-3 text-center">
+                  <a href="{{ dokumen.file_dokumen.url }}" target="_blank" class="text-blue-500 hover:underline text-xs mr-2">Lihat</a>
+                  <button type="button" onclick="openModal('modalEditDokumen{{ dokumen.id }}')" class="text-xs text-neutral-600 hover:text-neutral-800 mr-2">Edit</button>
+                  <button type="button" onclick="openModal('modalHapusDokumen{{ dokumen.id }}')" class="text-xs text-red-600 hover:text-red-800">Hapus</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-neutral-400">Belum ada dokumen.</p>
+        {% endif %}
+      </div>
+
+      <!-- Log Riwayat -->
+      {% elif active_tab == 'log' %}
+      {% if log_list %}
+      <div class="space-y-3">
+        {% for log in log_list %}
+        <div class="flex items-start gap-3 p-3 bg-neutral-50 rounded-xl">
+          <div class="w-2 h-2 bg-neutral-900 rounded-full mt-2 shrink-0"></div>
+          <div>
+            <p class="text-sm font-medium text-neutral-800">{{ log.aksi }}</p>
+            <p class="text-xs text-neutral-400">{{ log.keterangan|default:'' }}</p>
+            <p class="text-xs text-neutral-400 mt-1">{{ log.created_at|date:'d M Y H:i' }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-neutral-400">Belum ada log riwayat.</p>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah Dokumen -->
+<div id="modalTambahDokumen" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+    <h3 class="font-semibold text-lg mb-4">Tambah Dokumen</h3>
+    <form method="post" action="{% url 'siswa:dokumen_create' siswa.pk %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Jenis Dokumen</label>
+          <select name="jenis_dokumen" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" required>
+            <option value="">-- Pilih --</option>
+            {% for val, label in dokumen_form.jenis_dokumen.field.choices %}
+              <option value="{{ val }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Nama Dokumen</label>
+          <input type="text" name="nama_dokumen" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">File</label>
+          <input type="file" name="file_dokumen" class="w-full text-sm" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Keterangan</label>
+          <textarea name="keterangan" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-6">
+        <button type="button" onclick="closeModal('modalTambahDokumen')" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200">Batal</button>
+        <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit Dokumen (for each) -->
+{% for dokumen in dokumen_list %}
+<div id="modalEditDokumen{{ dokumen.id }}" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+    <h3 class="font-semibold text-lg mb-4">Edit Dokumen</h3>
+    <form method="post" action="{% url 'siswa:dokumen_update' siswa.pk dokumen.id %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Jenis Dokumen</label>
+          <select name="jenis_dokumen" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" required>
+            {% for val, label in dokumen_form.jenis_dokumen.field.choices %}
+              <option value="{{ val }}" {% if dokumen.jenis_dokumen == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Nama Dokumen</label>
+          <input type="text" name="nama_dokumen" value="{{ dokumen.nama_dokumen }}" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">File (kosongkan jika tidak diubah)</label>
+          <input type="file" name="file_dokumen" class="w-full text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Keterangan</label>
+          <textarea name="keterangan" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" rows="2">{{ dokumen.keterangan }}</textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-6">
+        <button type="button" onclick="closeModal('modalEditDokumen{{ dokumen.id }}')" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200">Batal</button>
+        <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Modal Hapus Dokumen (for each) -->
+{% for dokumen in dokumen_list %}
+<div id="modalHapusDokumen{{ dokumen.id }}" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+    <h3 class="font-semibold text-lg mb-4">Hapus Dokumen</h3>
+    <p class="text-sm text-neutral-600 mb-4">Yakin ingin menghapus "{{ dokumen.nama_dokumen }}"?</p>
+    <form method="post" action="{% url 'siswa:dokumen_delete' siswa.pk dokumen.id %}">
+      {% csrf_token %}
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeModal('modalHapusDokumen{{ dokumen.id }}')" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200">Batal</button>
+        <button type="submit" class="text-xs font-medium text-white bg-red-600 px-4 py-2 rounded-xl hover:bg-red-700">Hapus</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+function openModal(modalId) {
+  document.getElementById(modalId).classList.remove('hidden');
+  document.getElementById(modalId).classList.add('flex');
+}
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.add('hidden');
+  document.getElementById(modalId).classList.remove('flex');
+}
+</script>
+{% endblock %}

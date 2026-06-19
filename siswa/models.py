@@ -2,7 +2,9 @@ from django.db import models
 import os
 
 def get_upload_path(instance, filename):
-    # Folder terpisah berdasarkan NISN
+    return os.path.join('berkas_siswa', instance.siswa.nisn if instance.siswa.nisn else 'temp', filename)
+
+def get_foto_path(instance, filename):
     return os.path.join('foto_siswa', instance.nisn if instance.nisn else 'temp', filename)
 
 class Siswa(models.Model):
@@ -27,14 +29,12 @@ class Siswa(models.Model):
     catatan_medis = models.TextField(blank=True)
     alamat_tinggal = models.TextField()
     
-    # Pelacakan Status
     status_siswa = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Aktif')
     tanggal_masuk = models.DateField(help_text="Tanggal resmi diterima")
     tanggal_keluar = models.DateField(null=True, blank=True)
     
-    # Foto
-    foto_masuk = models.ImageField(upload_to=get_upload_path, null=True, blank=True)
-    foto_keluar = models.ImageField(upload_to=get_upload_path, null=True, blank=True)
+    foto_masuk = models.ImageField(upload_to=get_foto_path, null=True, blank=True)
+    foto_keluar = models.ImageField(upload_to=get_foto_path, null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -47,7 +47,6 @@ class Siswa(models.Model):
 
 class DataOrangTua(models.Model):
     id = models.BigAutoField(primary_key=True)
-    # OneToOne ke model Siswa di app yang sama
     siswa = models.OneToOneField(Siswa, on_delete=models.CASCADE, related_name='orang_tua')
     nama_ayah = models.CharField(max_length=255, blank=True)
     pekerjaan_ayah = models.CharField(max_length=100, blank=True)
@@ -65,3 +64,42 @@ class DataOrangTua(models.Model):
 
     def __str__(self):
         return f"Orang Tua: {self.siswa.nama_lengkap}"
+
+class JenisDokumen(models.TextChoices):
+    AKTE_KELAHIRAN = 'akte_kelahiran', 'Akte Kelahiran'
+    KARTU_KELUARGA = 'kartu_keluarga', 'Kartu Keluarga'
+    IJAZAH = 'ijazah', 'Ijazah'
+    TRANSKIP_NILAI = 'transkip_nilai', 'Transkip Nilai'
+    KTP = 'ktp', 'KTP'
+    LAINNYA = 'lainnya', 'Lainnya'
+
+class DokumenSiswa(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    siswa = models.ForeignKey(Siswa, on_delete=models.CASCADE, related_name='dokumen')
+    jenis_dokumen = models.CharField(max_length=30, choices=JenisDokumen.choices)
+    nama_dokumen = models.CharField(max_length=255)
+    file_dokumen = models.FileField(upload_to=get_upload_path)
+    keterangan = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'dokumen_siswa'
+
+    def __str__(self):
+        return f"{self.get_jenis_dokumen_display()}: {self.nama_dokumen}"
+
+class LogRiwayat(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    siswa = models.ForeignKey(Siswa, on_delete=models.CASCADE, related_name='log_riwayat')
+    aksi = models.CharField(max_length=50)
+    keterangan = models.TextField(blank=True)
+    created_by = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'log_riwayat_siswa'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.siswa.nama_lengkap} - {self.aksi}"
