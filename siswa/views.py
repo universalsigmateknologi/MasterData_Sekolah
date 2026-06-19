@@ -3,9 +3,17 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db.models import Q
-from .models import Siswa
+from django.forms import inlineformset_factory
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Siswa, DataOrangTua
+from .forms import SiswaForm, DataOrangTuaForm
 
-class SiswaListView(ListView):
+DataOrangTuaFormSet = inlineformset_factory(
+    Siswa, DataOrangTua, form=DataOrangTuaForm,
+    extra=1, can_delete=False, can_delete_extra=False
+)
+
+class SiswaListView(LoginRequiredMixin, ListView):
     model = Siswa
     template_name = 'siswa/siswa_list.html'
     context_object_name = 'siswa_list'
@@ -35,13 +43,10 @@ class SiswaListView(ListView):
         context['status_filter'] = self.request.GET.get('status', '')
         context['jk_filter'] = self.request.GET.get('jenis_kelamin', '')
 
-        # Generate page range for pagination
         paginator = context['paginator']
-        page_numbers = paginator.page_range
         current_page = context['page_obj'].number
-        # Show current page and 2 pages before/after, plus first and last pages
         page_range = []
-        for num in page_numbers:
+        for num in paginator.page_range:
             if num <= 3 or num > paginator.num_pages - 3:
                 page_range.append(num)
             elif abs(num - current_page) <= 2:
@@ -51,39 +56,57 @@ class SiswaListView(ListView):
         return context
 
 
-class SiswaCreateView(CreateView):
+class SiswaCreateView(LoginRequiredMixin, CreateView):
     model = Siswa
     template_name = 'siswa/siswa_form.html'
-    fields = ['nisn', 'nik', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir',
-              'tanggal_lahir', 'agama', 'golongan_darah', 'catatan_medis',
-              'alamat_tinggal', 'status_siswa', 'tanggal_masuk', 'tanggal_keluar',
-              'foto_masuk', 'foto_keluar']
+    form_class = SiswaForm
     success_url = reverse_lazy('siswa:index')
-    success_message = 'Data siswa berhasil ditambahkan.'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['ortu_form'] = DataOrangTuaFormSet(self.request.POST, self.request.FILES)
+        else:
+            context['ortu_form'] = DataOrangTuaFormSet()
+        return context
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, 'Data siswa berhasil ditambahkan.')
-        return response
+        self.object = form.save()
+        formset = DataOrangTuaFormSet(self.request.POST, self.request.FILES, instance=self.object)
+        if formset.is_valid():
+            formset.save()
+            messages.success(self.request, 'Data siswa berhasil ditambahkan.')
+            return redirect(self.success_url)
+        return self.form_invalid(form)
 
 
-class SiswaUpdateView(UpdateView):
+class SiswaUpdateView(LoginRequiredMixin, UpdateView):
     model = Siswa
     template_name = 'siswa/siswa_form.html'
     pk_url_kwarg = 'pk'
-    fields = ['nisn', 'nik', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir',
-              'tanggal_lahir', 'agama', 'golongan_darah', 'catatan_medis',
-              'alamat_tinggal', 'status_siswa', 'tanggal_masuk', 'tanggal_keluar',
-              'foto_masuk', 'foto_keluar']
+    form_class = SiswaForm
     success_url = reverse_lazy('siswa:index')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['ortu_form'] = DataOrangTuaFormSet(self.request.POST, self.request.FILES, instance=self.object)
+        else:
+            context['ortu_form'] = DataOrangTuaFormSet(instance=self.object)
+        return context
+
     def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, 'Data siswa berhasil diperbarui.')
-        return response
+        context = self.get_context_data()
+        ortu_form = context['ortu_form']
+        self.object = form.save()
+        if ortu_form.is_valid():
+            ortu_form.save()
+            messages.success(self.request, 'Data siswa berhasil diperbarui.')
+            return redirect('siswa:index')
+        return self.form_invalid(form)
 
 
-class SiswaDeleteView(DeleteView):
+class SiswaDeleteView(LoginRequiredMixin, DeleteView):
     model = Siswa
     template_name = 'siswa/siswa_confirm_delete.html'
     pk_url_kwarg = 'pk'

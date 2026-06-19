@@ -11,4 +11,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('siswa/', include('siswa.urls', namespace='siswa')),
     path('', RedirectView.as_view(pattern_name='siswa:index', permanent=True)),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) if settings.DEBUG else []
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

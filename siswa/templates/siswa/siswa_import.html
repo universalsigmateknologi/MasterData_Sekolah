@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Data Siswa{% endblock %}
+{% block breadcrumb_active %}Import Data Siswa{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Import Data Siswa</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">Import data siswa via file Excel (.xlsx)</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'siswa:download_template' %}" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm inline-flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3 3-3m2 8h.01M5.06 5.06A7 7 0 1015 7.54A7 7 0 015 7.54"/>
+        </svg>
+        Download Template
+      </a>
+      <a href="{% url 'siswa:create' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">Tambah Manual</a>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+      <div>
+        <label class="block text-xs font-medium text-neutral-600 mb-1.5">Pilih File Excel (.xlsx)</label>
+        <input type="file" name="import_file" accept=".xlsx,.xls" required class="w-full text-sm">
+        <p class="text-xs text-neutral-400 mt-1">Format: .xlsx dengan header sesuai template</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">Import Data</button>
+        <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">Batal</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

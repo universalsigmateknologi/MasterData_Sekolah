@@ -10,7 +10,7 @@
 
 {% block content %}
 <div class="flex-1 space-y-4">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div>
       <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">
         {% if object %}Edit Siswa{% else %}Tambah Siswa{% endif %}
@@ -24,94 +24,166 @@
     </a>
   </div>
 
-  <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
-    <form method="post" enctype="multipart/form-data" class="space-y-6">
-      {% csrf_token %}
+  <!-- Tabs -->
+  <div class="flex items-center gap-1 bg-neutral-100 rounded-xl p-1 w-fit">
+    <a href="{% url 'siswa:create' %}" class="px-4 py-2 rounded-lg text-xs font-medium transition-all {% if request.resolver_match.url_name == 'create' or request.resolver_match.url_name == 'update' %}bg-white shadow-sm text-neutral-800{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Form Manual</a>
+    <a href="{% url 'siswa:import' %}" class="px-4 py-2 rounded-lg text-xs font-medium transition-all {% if request.resolver_match.url_name == 'import' %}bg-white shadow-sm text-neutral-800{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Import Excel</a>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- Data Siswa -->
+    <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+      <h3 class="font-semibold text-neutral-800 text-base mb-4">Data Siswa</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {{ form.non_field_errors }}
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">NISN</label>
-          <input type="{{ form.nisn.field.widget.input_type|default:'text' }}" name="{{ form.nisn.name }}" value="{{ form.nisn.value|default:'' }}" id="{{ form.nisn.id_for_label }}" placeholder="NISN" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.nisn }}
+          {{ form.nisn.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">NIK</label>
-          <input type="{{ form.nik.field.widget.input_type|default:'text' }}" name="{{ form.nik.name }}" value="{{ form.nik.value|default:'' }}" id="{{ form.nik.id_for_label }}" placeholder="NIK" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.nik }}
+          {{ form.nik.errors }}
         </div>
         <div class="md:col-span-2">
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Nama Lengkap *</label>
-          <input type="text" name="{{ form.nama_lengkap.name }}" value="{{ form.nama_lengkap.value|default:'' }}" id="{{ form.nama_lengkap.id_for_label }}" required class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.nama_lengkap }}
+          {{ form.nama_lengkap.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Jenis Kelamin *</label>
-          <select name="{{ form.jenis_kelamin.name }}" id="{{ form.jenis_kelamin.id_for_label }}" required class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
-            <option value="">-- Pilih --</option>
-            {% for val, label in form.jenis_kelamin.field.choices %}
-              <option value="{{ val }}" {% if form.jenis_kelamin.value == val %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
+          {{ form.jenis_kelamin }}
+          {{ form.jenis_kelamin.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Tempat Lahir *</label>
-          <input type="text" name="{{ form.tempat_lahir.name }}" value="{{ form.tempat_lahir.value|default:'' }}" id="{{ form.tempat_lahir.id_for_label }}" required class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.tempat_lahir }}
+          {{ form.tempat_lahir.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Tanggal Lahir *</label>
-          <input type="date" name="{{ form.tanggal_lahir.name }}" value="{{ form.tanggal_lahir.value|date:'Y-m-d'|default:'' }}" id="{{ form.tanggal_lahir.id_for_label }}" required class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.tanggal_lahir }}
+          {{ form.tanggal_lahir.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Agama</label>
-          <input type="text" name="{{ form.agama.name }}" value="{{ form.agama.value|default:'' }}" id="{{ form.agama.id_for_label }}" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.agama }}
+          {{ form.agama.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Golongan Darah</label>
-          <input type="text" name="{{ form.golongan_darah.name }}" value="{{ form.golongan_darah.value|default:'' }}" id="{{ form.golongan_darah.id_for_label }}" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.golongan_darah }}
+          {{ form.golongan_darah.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Status Siswa *</label>
-          <select name="{{ form.status_siswa.name }}" id="{{ form.status_siswa.id_for_label }}" required class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
-            {% for val, label in form.status_siswa.field.choices %}
-              <option value="{{ val }}" {% if form.status_siswa.value == val %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
+          {{ form.status_siswa }}
+          {{ form.status_siswa.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Tanggal Masuk *</label>
-          <input type="date" name="{{ form.tanggal_masuk.name }}" value="{{ form.tanggal_masuk.value|date:'Y-m-d'|default:'' }}" id="{{ form.tanggal_masuk.id_for_label }}" required class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.tanggal_masuk }}
+          {{ form.tanggal_masuk.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Tanggal Keluar</label>
-          <input type="date" name="{{ form.tanggal_keluar.name }}" value="{{ form.tanggal_keluar.value|date:'Y-m-d'|default:'' }}" id="{{ form.tanggal_keluar.id_for_label }}" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+          {{ form.tanggal_keluar }}
+          {{ form.tanggal_keluar.errors }}
         </div>
         <div class="md:col-span-2">
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Alamat Tinggal *</label>
-          <textarea name="{{ form.alamat_tinggal.name }}" id="{{ form.alamat_tinggal.id_for_label }}" rows="3" required class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">{{ form.alamat_tinggal.value|default:'' }}</textarea>
+          {{ form.alamat_tinggal }}
+          {{ form.alamat_tinggal.errors }}
         </div>
         <div class="md:col-span-2">
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Catatan Medis</label>
-          <textarea name="{{ form.catatan_medis.name }}" id="{{ form.catatan_medis.id_for_label }}" rows="3" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300">{{ form.catatan_medis.value|default:'' }}</textarea>
+          {{ form.catatan_medis }}
+          {{ form.catatan_medis.errors }}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Foto Masuk</label>
-          <input type="file" name="{{ form.foto_masuk.name }}" id="{{ form.foto_masuk.id_for_label }}" accept="image/*" class="w-full text-sm">
+          {{ form.foto_masuk }}
+          {{ form.foto_masuk.errors }}
           {% if object.foto_masuk %}
             <p class="text-xs text-neutral-400 mt-1">Foto sudah ada: <a href="{{ object.foto_masuk.url }}" target="_blank" class="text-blue-500 hover:underline">lihat</a></p>
           {% endif %}
         </div>
         <div>
           <label class="block text-xs font-medium text-neutral-600 mb-1.5">Foto Keluar</label>
-          <input type="file" name="{{ form.foto_keluar.name }}" id="{{ form.foto_keluar.id_for_label }}" accept="image/*" class="w-full text-sm">
+          {{ form.foto_keluar }}
+          {{ form.foto_keluar.errors }}
           {% if object.foto_keluar %}
             <p class="text-xs text-neutral-400 mt-1">Foto sudah ada: <a href="{{ object.foto_keluar.url }}" target="_blank" class="text-blue-500 hover:underline">lihat</a></p>
           {% endif %}
         </div>
       </div>
+    </div>
 
-      <div class="flex items-center gap-3 pt-4 border-t border-border-light">
-        <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
-          {% if object %}Simpan Perubahan{% else %}Tambah Siswa{% endif %}
-        </button>
-        <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">Batal</a>
+    <!-- Data Orang Tua -->
+    <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+      <h3 class="font-semibold text-neutral-800 text-base mb-4">Data Orang Tua</h3>
+      {{ ortu_form.management_form }}
+      {% for form_ortu in ortu_form %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {{ form_ortu.non_field_errors }}
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Nama Ayah</label>
+          {{ form_ortu.nama_ayah }}
+          {{ form_ortu.nama_ayah.errors }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Pekerjaan Ayah</label>
+          {{ form_ortu.pekerjaan_ayah }}
+          {{ form_ortu.pekerjaan_ayah.errors }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">No HP Ayah</label>
+          {{ form_ortu.no_hp_ayah }}
+          {{ form_ortu.no_hp_ayah.errors }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Nama Ibu</label>
+          {{ form_ortu.nama_ibu }}
+          {{ form_ortu.nama_ibu.errors }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Pekerjaan Ibu</label>
+          {{ form_ortu.pekerjaan_ibu }}
+          {{ form_ortu.pekerjaan_ibu.errors }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">No HP Ibu</label>
+          {{ form_ortu.no_hp_ibu }}
+          {{ form_ortu.no_hp_ibu.errors }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Nama Wali</label>
+          {{ form_ortu.nama_wali }}
+          {{ form_ortu.nama_wali.errors }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">Pekerjaan Wali</label>
+          {{ form_ortu.pekerjaan_wali }}
+          {{ form_ortu.pekerjaan_wali.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-medium text-neutral-600 mb-1.5">No HP Wali</label>
+          {{ form_ortu.no_hp_wali }}
+          {{ form_ortu.no_hp_wali.errors }}
+        </div>
       </div>
-    </form>
-  </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
+        {% if object %}Simpan Perubahan{% else %}Tambah Siswa{% endif %}
+      </button>
+      <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">Batal</a>
+    </div>
+  </form>
 </div>
 {% endblock %}
