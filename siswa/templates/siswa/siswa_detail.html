@@ -34,6 +34,20 @@
       <!-- Identitas Siswa -->
       {% if active_tab == 'identitas' %}
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2 flex items-center gap-6">
+          {% if siswa.foto_masuk %}
+          <div>
+            <p class="text-xs text-neutral-400 mb-2">Foto Masuk</p>
+            <img src="{{ siswa.foto_masuk.url }}" alt="Foto Masuk" class="w-24 h-24 object-cover rounded-xl ring-2 ring-neutral-200 cursor-pointer hover:opacity-80 transition-opacity" onclick="openPreviewModal('{{ siswa.foto_masuk.url }}', 'Foto Masuk')">
+          </div>
+          {% endif %}
+          {% if siswa.foto_keluar %}
+          <div>
+            <p class="text-xs text-neutral-400 mb-2">Foto Keluar</p>
+            <img src="{{ siswa.foto_keluar.url }}" alt="Foto Keluar" class="w-24 h-24 object-cover rounded-xl ring-2 ring-neutral-200 cursor-pointer hover:opacity-80 transition-opacity" onclick="openPreviewModal('{{ siswa.foto_keluar.url }}', 'Foto Keluar')">
+          </div>
+          {% endif %}
+        </div>
         <div>
           <p class="text-xs text-neutral-400">NISN</p>
           <p class="text-sm font-medium text-neutral-800">{{ siswa.nisn|default:'-' }}</p>
@@ -289,6 +303,14 @@
 </div>
 {% endfor %}
 
+{# Modal Preview Foto #}
+<div id="modalPreviewFoto" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center" onclick="closeModal('modalPreviewFoto')">
+  <div class="max-w-3xl max-h-[80vh] p-4">
+    <img id="previewImage" src="" alt="Preview" class="max-w-full max-h-[70vh] object-contain rounded-lg">
+    <p id="previewLabel" class="text-center text-white mt-4 text-sm font-medium"></p>
+  </div>
+</div>
+
 <script>
 function openModal(modalId) {
   document.getElementById(modalId).classList.remove('hidden');
@@ -297,6 +319,12 @@ function openModal(modalId) {
 function closeModal(modalId) {
   document.getElementById(modalId).classList.add('hidden');
   document.getElementById(modalId).classList.remove('flex');
+}
+function openPreviewModal(imgUrl, label) {
+  document.getElementById('previewImage').src = imgUrl;
+  document.getElementById('previewLabel').textContent = label;
+  document.getElementById('modalPreviewFoto').classList.remove('hidden');
+  document.getElementById('modalPreviewFoto').classList.add('flex');
 }
 </script>
 {% endblock %}
