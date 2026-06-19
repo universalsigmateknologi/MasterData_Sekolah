@@ -210,10 +210,12 @@
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <!-- Modal Tambah Dokumen -->
-<div id="modalTambahDokumen" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+<div id="modalTambahDokumen" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-md sm:p-6 p-4">
     <h3 class="font-semibold text-lg mb-4">Tambah Dokumen</h3>
     <form method="post" action="{% url 'siswa:dokumen_create' siswa.pk %}" enctype="multipart/form-data">
       {% csrf_token %}
@@ -240,7 +242,7 @@
           <textarea name="keterangan" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" rows="2"></textarea>
         </div>
       </div>
-      <div class="flex justify-end gap-2 mt-6">
+      <div class="flex justify-end gap-2 pt-4 border-t border-border-light/50">
         <button type="button" onclick="closeModal('modalTambahDokumen')" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200">Batal</button>
         <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800">Simpan</button>
       </div>
@@ -250,8 +252,8 @@
 
 <!-- Modal Edit Dokumen (for each) -->
 {% for dokumen in dokumen_list %}
-<div id="modalEditDokumen{{ dokumen.id }}" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+<div id="modalEditDokumen{{ dokumen.id }}" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-md sm:p-6 p-4">
     <h3 class="font-semibold text-lg mb-4">Edit Dokumen</h3>
     <form method="post" action="{% url 'siswa:dokumen_update' siswa.pk dokumen.id %}" enctype="multipart/form-data">
       {% csrf_token %}
@@ -277,7 +279,7 @@
           <textarea name="keterangan" class="w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5" rows="2">{{ dokumen.keterangan }}</textarea>
         </div>
       </div>
-      <div class="flex justify-end gap-2 mt-6">
+      <div class="flex justify-end gap-2 pt-4 border-t border-border-light/50">
         <button type="button" onclick="closeModal('modalEditDokumen{{ dokumen.id }}')" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200">Batal</button>
         <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800">Simpan</button>
       </div>
@@ -288,8 +290,8 @@
 
 <!-- Modal Hapus Dokumen (for each) -->
 {% for dokumen in dokumen_list %}
-<div id="modalHapusDokumen{{ dokumen.id }}" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+<div id="modalHapusDokumen{{ dokumen.id }}" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-md sm:p-6 p-4">
     <h3 class="font-semibold text-lg mb-4">Hapus Dokumen</h3>
     <p class="text-sm text-neutral-600 mb-4">Yakin ingin menghapus "{{ dokumen.nama_dokumen }}"?</p>
     <form method="post" action="{% url 'siswa:dokumen_delete' siswa.pk dokumen.id %}">
@@ -303,28 +305,37 @@
 </div>
 {% endfor %}
 
-{# Modal Preview Foto #}
-<div id="modalPreviewFoto" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center" onclick="closeModal('modalPreviewFoto')">
-  <div class="max-w-3xl max-h-[80vh] p-4">
-    <img id="previewImage" src="" alt="Preview" class="max-w-full max-h-[70vh] object-contain rounded-lg">
-    <p id="previewLabel" class="text-center text-white mt-4 text-sm font-medium"></p>
+<!-- Modal Preview Foto -->
+<div id="modalPreviewFoto" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4" onclick="closeModal('modalPreviewFoto')">
+  <div class="max-w-3xl max-h-[85vh]">
+    <img id="previewImage" src="" alt="Preview" class="max-w-full max-h-[80vh] object-contain rounded-lg">
+    <p id="previewLabel" class="text-center text-white pt-3 text-sm font-medium"></p>
   </div>
 </div>
 
 <script>
 function openModal(modalId) {
-  document.getElementById(modalId).classList.remove('hidden');
-  document.getElementById(modalId).classList.add('flex');
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
 }
 function closeModal(modalId) {
-  document.getElementById(modalId).classList.add('hidden');
-  document.getElementById(modalId).classList.remove('flex');
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
 }
 function openPreviewModal(imgUrl, label) {
   document.getElementById('previewImage').src = imgUrl;
   document.getElementById('previewLabel').textContent = label;
   document.getElementById('modalPreviewFoto').classList.remove('hidden');
   document.getElementById('modalPreviewFoto').classList.add('flex');
+  document.body.style.overflow = 'hidden';
 }
 </script>
 {% endblock %}
