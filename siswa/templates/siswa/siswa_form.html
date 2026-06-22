@@ -27,7 +27,11 @@
   <!-- Tabs -->
   <div class="flex items-center gap-1 bg-neutral-100 rounded-xl p-1 w-fit">
     <a href="{% url 'siswa:create' %}" class="px-4 py-2 rounded-lg text-xs font-medium transition-all {% if request.resolver_match.url_name == 'create' or request.resolver_match.url_name == 'update' %}bg-white shadow-sm text-neutral-800{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Form Manual</a>
+    {% if object %}
+    <span class="px-4 py-2 rounded-lg text-xs font-medium text-neutral-400 cursor-not-allowed select-none" title="Import Excel tidak tersedia saat mengedit data siswa">Import Excel</span>
+    {% else %}
     <a href="{% url 'siswa:import' %}" class="px-4 py-2 rounded-lg text-xs font-medium transition-all {% if request.resolver_match.url_name == 'import' %}bg-white shadow-sm text-neutral-800{% else %}text-neutral-500 hover:text-neutral-700{% endif %}">Import Excel</a>
+    {% endif %}
   </div>
 
   <form method="post" enctype="multipart/form-data" class="space-y-6">
