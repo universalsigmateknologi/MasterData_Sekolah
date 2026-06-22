@@ -16,6 +16,22 @@ class Siswa(models.Model):
     ]
     
     JENIS_KELAMIN_CHOICES = [('L', 'Laki-laki'), ('P', 'Perempuan')]
+    
+    AGAMA_CHOICES = [
+        ('Islam', 'Islam'),
+        ('Kristen', 'Kristen'),
+        ('Katolik', 'Katolik'),
+        ('Hindu', 'Hindu'),
+        ('Buddha', 'Buddha'),
+        ('Khonghucu', 'Khonghucu'),
+    ]
+
+    GOLONGAN_DARAH_CHOICES = [
+        ('A', 'A'),
+        ('B', 'B'),
+        ('AB', 'AB'),
+        ('O', 'O'),
+    ]
 
     id = models.BigAutoField(primary_key=True)
     nisn = models.CharField(max_length=10, unique=True, null=True, blank=True)
@@ -24,8 +40,8 @@ class Siswa(models.Model):
     jenis_kelamin = models.CharField(max_length=10, choices=JENIS_KELAMIN_CHOICES)
     tempat_lahir = models.CharField(max_length=100)
     tanggal_lahir = models.DateField()
-    agama = models.CharField(max_length=30, blank=True)
-    golongan_darah = models.CharField(max_length=3, blank=True)
+    agama = models.CharField(max_length=30, choices=AGAMA_CHOICES, blank=True)
+    golongan_darah = models.CharField(max_length=3, choices=GOLONGAN_DARAH_CHOICES, blank=True)
     catatan_medis = models.TextField(blank=True)
     alamat_tinggal = models.TextField()
     
