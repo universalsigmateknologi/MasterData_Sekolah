@@ -9,6 +9,7 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('auth/', include('auth.urls', namespace='auth')),
     path('siswa/', include('siswa.urls', namespace='siswa')),
     path('', RedirectView.as_view(pattern_name='siswa:index', permanent=True)),
 ]

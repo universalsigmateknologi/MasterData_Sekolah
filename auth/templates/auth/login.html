@@ -1,0 +1,240 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Minima Admin</title>
+
+    <!-- Tailwind CSS CDN -->
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4d4d4;
+            border-radius: 10px;
+        }
+        .input-focus-ring {
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-focus-ring:focus {
+            outline: none;
+            border-color: #262626;
+            box-shadow: 0 0 0 3px rgba(38, 38, 38, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-surface text-neutral-800 antialiased">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md animate-fade-in">
+        <!-- Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-border-light p-8 md:p-10 animate-slide-up">
+
+            <!-- Logo / Icon -->
+            <div class="flex flex-col items-center mb-8">
+                <div class="w-12 h-12 bg-neutral-900 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Masuk ke Akun</h1>
+                <p class="text-sm text-neutral-400 mt-1">Masukkan kredensial untuk melanjutkan</p>
+            </div>
+
+            {% if error_message %}
+            <div class="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center gap-2">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ error_message }}</span>
+            </div>
+            {% endif %}
+
+            <!-- Form -->
+            <form id="loginForm" method="POST" action="{% url 'auth:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="space-y-5" novalidate>
+                {% csrf_token %}
+                <!-- Username -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-neutral-600 mb-1.5">Username</label>
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                        </svg>
+                        <input type="text" id="username" name="username" placeholder="Masukkan username"
+                        class="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-border-light rounded-xl text-sm text-neutral-800 placeholder-neutral-400 input-focus-ring transition-all"
+                        autocomplete="username" required>
+                    </div>
+                    <p id="usernameError" class="text-xs text-red-500 mt-1.5 hidden">Username tidak boleh kosong (minimal 3 karakter).</p>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-neutral-600 mb-1.5">Kata Sandi</label>
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <input type="password" id="password" name="password" placeholder="••••••••"
+                        class="w-full pl-10 pr-12 py-3 bg-neutral-50 border border-border-light rounded-xl text-sm text-neutral-800 placeholder-neutral-400 input-focus-ring transition-all"
+                        autocomplete="current-password" required>
+                        <button type="button" id="togglePassword"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors p-0.5"
+                        aria-label="Tampilkan kata sandi">
+                        <svg id="eyeIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
+                <p id="passwordError" class="text-xs text-red-500 mt-1.5 hidden">Kata sandi harus diisi (minimal 6 karakter).</p>
+            </div>
+
+            <!-- Remember & Forgot -->
+            <div class="flex items-center justify-between text-sm">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="remember" class="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 cursor-pointer">
+                    <span class="text-neutral-500">Ingat saya</span>
+                </label>
+                <a href="#" class="text-neutral-600 font-medium hover:text-neutral-800 transition-colors">Lupa kata sandi?</a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn"
+            class="w-full bg-neutral-900 text-white py-3 rounded-xl font-medium text-sm hover:bg-neutral-800 transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
+            <span id="btnText">Masuk</span>
+            <svg id="loadingSpinner" class="w-4 h-4 animate-spin hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </button>
+    </form>
+</div>
+
+<!-- Footer kecil -->
+<p class="text-center text-xs text-neutral-300 mt-6 animate-fade-in">&copy; 2024 Minima. All rights reserved.</p>
+</div>
+
+<!-- JavaScript -->
+<script>
+    (function() {
+        const form = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const usernameError = document.getElementById('usernameError');
+        const passwordError = document.getElementById('passwordError');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        // Toggle password visibility
+        let passwordVisible = false;
+        togglePasswordBtn.addEventListener('click', function() {
+            passwordVisible = !passwordVisible;
+            if (passwordVisible) {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML =
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.028 10.028 0 012.932-4.32m3.258-1.692A10.05 10.05 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.028 10.028 0 01-2.932 4.32M9.88 9.88a3 3 0 104.24 4.24"></path>';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML =
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            }
+        });
+
+        // Helper: show error
+        function showError(input, errorEl, message) {
+            input.classList.add('border-red-400', 'bg-red-50');
+            input.classList.remove('border-border-light');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+
+        // Helper: clear error
+        function clearError(input, errorEl) {
+            input.classList.remove('border-red-400', 'bg-red-50');
+            input.classList.add('border-border-light');
+            errorEl.classList.add('hidden');
+        }
+
+        // Real-time validation clear on input
+        usernameInput.addEventListener('input', function() {
+            if (usernameInput.value.trim().length >= 3) {
+                clearError(usernameInput, usernameError);
+            }
+        });
+        passwordInput.addEventListener('input', function() {
+            if (passwordInput.value.trim().length >= 6) {
+                clearError(passwordInput, passwordError);
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            // Reset errors
+            clearError(usernameInput, usernameError);
+            clearError(passwordInput, passwordError);
+
+            // Validate username (min 3 chars)
+            const usernameValue = usernameInput.value.trim();
+            if (usernameValue.length < 3) {
+                showError(usernameInput, usernameError, 'Username minimal 3 karakter.');
+                isValid = false;
+            }
+
+            // Validate password (min 6 chars)
+            const passwordValue = passwordInput.value.trim();
+            if (passwordValue.length < 6) {
+                showError(passwordInput, passwordError, 'Kata sandi minimal 6 karakter.');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                // Shake animation on the card
+                const card = document.querySelector('.bg-white');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 500);
+                return;
+            }
+
+            // Show loading animation on submit
+            btnText.textContent = 'Memproses...';
+            loadingSpinner.classList.remove('hidden');
+            submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+        });
+
+        // Fokus pertama pada username
+        usernameInput.focus();
+    })();
+</script>
+</body>
+</html>
