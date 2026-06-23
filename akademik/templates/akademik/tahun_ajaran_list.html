@@ -1,0 +1,473 @@
+{% extends 'base.html' %}
+
+{% block title %}Tahun Ajaran{% endblock %}
+
+{% block breadcrumb %}
+<div class="hidden sm:flex items-center gap-1.5 text-sm text-neutral-400">
+  <span class="text-neutral-500">Master Data</span>
+  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+  </svg>
+  <span class="text-neutral-800 font-medium">Tahun Ajaran</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4">
+
+  <!-- Django Messages -->
+  {% if messages %}
+  <div id="alertContainer" class="space-y-2">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl border text-sm
+      {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+      {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+      {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}"
+      role="alert">
+      {% if message.tags == 'success' %}
+        <svg class="w-4 h-4 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      {% else %}
+        <svg class="w-4 h-4 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      {% endif %}
+      <span>{{ message }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-auto p-0.5 rounded-lg hover:opacity-70 transition-opacity">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Toolbar -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Tahun Ajaran</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">Kelola data tahun ajaran akademik</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        onclick="openCreateModal()"
+        id="btnTambahTahunAjaran"
+        class="inline-flex items-center gap-2 text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Tambah Tahun Ajaran
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+    <form method="get" class="flex flex-col sm:flex-row gap-3">
+      <div class="flex-1 flex items-center gap-2 bg-neutral-100 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-neutral-300 focus-within:bg-white transition-all">
+        <svg class="w-4 h-4 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          type="text"
+          name="search"
+          value="{{ search_query }}"
+          placeholder="Cari tahun atau semester..."
+          class="bg-transparent text-sm outline-none w-full text-neutral-700 placeholder-neutral-400">
+      </div>
+
+      <select name="semester" class="text-xs font-medium bg-white border border-border-light rounded-xl px-3 py-2 outline-none text-neutral-600 cursor-pointer">
+        <option value="">Semua Semester</option>
+        <option value="Ganjil" {% if semester_filter == 'Ganjil' %}selected{% endif %}>Ganjil</option>
+        <option value="Genap" {% if semester_filter == 'Genap' %}selected{% endif %}>Genap</option>
+      </select>
+
+      <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800 transition-all">Filter</button>
+      <a href="{% url 'akademik:tahun_ajaran_list' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200 transition-all">Reset</a>
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+    <div class="flex items-center justify-between p-5 md:p-6 border-b border-border-light">
+      <h3 class="font-semibold text-neutral-800 text-base">Daftar Tahun Ajaran</h3>
+      <span class="text-sm text-neutral-400">{{ tahun_ajaran_list|length }} data</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-neutral-50 text-neutral-500 text-xs font-medium uppercase tracking-wider">
+            <th class="text-left px-6 py-3.5">No</th>
+            <th class="text-left px-6 py-3.5">Tahun Ajaran</th>
+            <th class="text-left px-6 py-3.5">Semester</th>
+            <th class="text-center px-6 py-3.5">Status</th>
+            <th class="text-left px-6 py-3.5 hidden md:table-cell">Dibuat</th>
+            <th class="text-center px-6 py-3.5">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border-light">
+          {% for obj in tahun_ajaran_list %}
+          <tr class="hover:bg-neutral-50 transition-colors">
+            <td class="px-6 py-4 text-neutral-400 text-xs">{{ forloop.counter }}</td>
+            <td class="px-6 py-4 font-semibold text-neutral-800">{{ obj.tahun }}</td>
+            <td class="px-6 py-4 text-neutral-600">
+              <span class="inline-flex items-center gap-1.5">
+                {% if obj.semester == 'Ganjil' %}
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>
+                {% else %}
+                  <span class="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0"></span>
+                {% endif %}
+                {{ obj.semester }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              {% if obj.is_aktif %}
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                  ✓ Aktif
+                </span>
+              {% else %}
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500">
+                  Tidak Aktif
+                </span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 text-neutral-400 text-xs hidden md:table-cell">
+              {{ obj.created_at|date:'d M Y' }}
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-center gap-1">
+                <!-- Tombol Aktifkan -->
+                {% if not obj.is_aktif %}
+                <button
+                  onclick="openSetAktifModal({{ obj.pk }}, '{{ obj.tahun }} - {{ obj.semester }}')"
+                  class="p-1.5 rounded-lg hover:bg-green-100 transition-colors text-neutral-400 hover:text-green-700"
+                  title="Jadikan Aktif">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </button>
+                {% endif %}
+                <!-- Tombol Edit -->
+                <button
+                  onclick="openEditModal({{ obj.pk }}, '{{ obj.tahun }}', '{{ obj.semester }}', {{ obj.is_aktif|yesno:'true,false' }})"
+                  class="p-1.5 rounded-lg hover:bg-neutral-200 transition-colors text-neutral-600"
+                  title="Edit">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                </button>
+                <!-- Tombol Hapus -->
+                <button
+                  onclick="openDeleteModal({{ obj.pk }}, '{{ obj.tahun }} - {{ obj.semester }}')"
+                  class="p-1.5 rounded-lg hover:bg-red-100 transition-colors text-red-500"
+                  title="Hapus">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center">
+              <div class="flex flex-col items-center gap-3 text-neutral-400">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="text-sm">Belum ada data tahun ajaran</p>
+                <button onclick="openCreateModal()" class="text-xs font-medium text-neutral-700 underline underline-offset-2">Tambah sekarang</button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL TAMBAH ========== -->
+<div id="modalCreate" class="fixed inset-0 z-50 hidden items-center justify-center p-4 !mt-0">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalCreate')"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-95 opacity-0" id="modalCreateContent">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b border-neutral-100">
+      <div>
+        <h2 class="text-base font-semibold text-neutral-900">Tambah Tahun Ajaran</h2>
+        <p class="text-xs text-neutral-400 mt-0.5">Isi form di bawah untuk menambah data baru</p>
+      </div>
+      <button onclick="closeModal('modalCreate')" class="p-1.5 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Body -->
+    <form method="post" action="{% url 'akademik:tahun_ajaran_create' %}" id="formCreate">
+      {% csrf_token %}
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-neutral-700 mb-1.5">Tahun Ajaran <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            name="tahun"
+            id="createTahun"
+            placeholder="Contoh: 2025/2026"
+            maxlength="9"
+            required
+            class="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-neutral-300 focus:border-transparent transition-all">
+          <p class="text-xs text-neutral-400 mt-1">Format: YYYY/YYYY (contoh: 2025/2026)</p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-700 mb-1.5">Semester <span class="text-red-500">*</span></label>
+          <select
+            name="semester"
+            id="createSemester"
+            required
+            class="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-neutral-300 focus:border-transparent transition-all bg-white">
+            <option value="">-- Pilih Semester --</option>
+            <option value="Ganjil">Ganjil</option>
+            <option value="Genap">Genap</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+          <input
+            type="checkbox"
+            name="is_aktif"
+            id="createIsAktif"
+            class="w-4 h-4 rounded border-neutral-300 text-neutral-900 cursor-pointer">
+          <div>
+            <label for="createIsAktif" class="text-xs font-medium text-neutral-800 cursor-pointer">Jadikan Tahun Ajaran Aktif</label>
+            <p class="text-xs text-neutral-400">Mencentang ini akan menonaktifkan tahun ajaran lain</p>
+          </div>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-2 px-6 pb-6">
+        <button type="button" onclick="closeModal('modalCreate')" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">
+          Batal
+        </button>
+        <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all inline-flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Simpan
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========== MODAL EDIT ========== -->
+<div id="modalEdit" class="fixed inset-0 z-50 hidden items-center justify-center p-4 !mt-0">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalEdit')"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-95 opacity-0" id="modalEditContent">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b border-neutral-100">
+      <div>
+        <h2 class="text-base font-semibold text-neutral-900">Edit Tahun Ajaran</h2>
+        <p class="text-xs text-neutral-400 mt-0.5">Perbarui data tahun ajaran</p>
+      </div>
+      <button onclick="closeModal('modalEdit')" class="p-1.5 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Body -->
+    <form method="post" id="formEdit" action="">
+      {% csrf_token %}
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-neutral-700 mb-1.5">Tahun Ajaran <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            name="tahun"
+            id="editTahun"
+            placeholder="Contoh: 2025/2026"
+            maxlength="9"
+            required
+            class="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-neutral-300 focus:border-transparent transition-all">
+          <p class="text-xs text-neutral-400 mt-1">Format: YYYY/YYYY (contoh: 2025/2026)</p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-neutral-700 mb-1.5">Semester <span class="text-red-500">*</span></label>
+          <select
+            name="semester"
+            id="editSemester"
+            required
+            class="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-neutral-300 focus:border-transparent transition-all bg-white">
+            <option value="">-- Pilih Semester --</option>
+            <option value="Ganjil">Ganjil</option>
+            <option value="Genap">Genap</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+          <input
+            type="checkbox"
+            name="is_aktif"
+            id="editIsAktif"
+            class="w-4 h-4 rounded border-neutral-300 text-neutral-900 cursor-pointer">
+          <div>
+            <label for="editIsAktif" class="text-xs font-medium text-neutral-800 cursor-pointer">Jadikan Tahun Ajaran Aktif</label>
+            <p class="text-xs text-neutral-400">Mencentang ini akan menonaktifkan tahun ajaran lain</p>
+          </div>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-2 px-6 pb-6">
+        <button type="button" onclick="closeModal('modalEdit')" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">
+          Batal
+        </button>
+        <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all inline-flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 13l4 4L19 7"/>
+          </svg>
+          Simpan Perubahan
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========== MODAL HAPUS ========== -->
+<div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center p-4 !mt-0">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalDelete')"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all scale-95 opacity-0" id="modalDeleteContent">
+    <div class="p-6">
+      <div class="flex flex-col items-center text-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-base font-semibold text-neutral-900">Hapus Tahun Ajaran?</h2>
+          <p class="text-xs text-neutral-500 mt-1">Data <strong id="deleteLabel" class="text-neutral-800"></strong> akan dihapus secara permanen dan tidak dapat dikembalikan.</p>
+        </div>
+      </div>
+      <form method="post" id="formDelete" action="" class="mt-5 flex items-center gap-2">
+        {% csrf_token %}
+        <button type="button" onclick="closeModal('modalDelete')" class="flex-1 text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">
+          Batal
+        </button>
+        <button type="submit" class="flex-1 text-xs font-medium text-white bg-red-600 px-4 py-2.5 rounded-xl hover:bg-red-700 transition-all">
+          Ya, Hapus
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL AKTIFKAN ========== -->
+<div id="modalSetAktif" class="fixed inset-0 z-50 hidden items-center justify-center p-4 !mt-0">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalSetAktif')"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all scale-95 opacity-0" id="modalSetAktifContent">
+    <div class="p-6">
+      <div class="flex flex-col items-center text-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center">
+          <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-base font-semibold text-neutral-900">Aktifkan Tahun Ajaran?</h2>
+          <p class="text-xs text-neutral-500 mt-1">
+            <strong id="aktifLabel" class="text-neutral-800"></strong> akan dijadikan tahun ajaran aktif. Tahun ajaran lain yang sedang aktif akan dinonaktifkan.
+          </p>
+        </div>
+      </div>
+      <form method="post" id="formSetAktif" action="" class="mt-5 flex items-center gap-2">
+        {% csrf_token %}
+        <button type="button" onclick="closeModal('modalSetAktif')" class="flex-1 text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all">
+          Batal
+        </button>
+        <button type="submit" class="flex-1 text-xs font-medium text-white bg-green-600 px-4 py-2.5 rounded-xl hover:bg-green-700 transition-all">
+          Ya, Aktifkan
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+  // ---- Utility Modal ----
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    const content = document.getElementById(id + 'Content');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    });
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    const content = document.getElementById(id + 'Content');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      ['modalCreate', 'modalEdit', 'modalDelete', 'modalSetAktif'].forEach(closeModal);
+    }
+  });
+
+  // ---- Modal Tambah ----
+  function openCreateModal() {
+    document.getElementById('formCreate').reset();
+    openModal('modalCreate');
+    setTimeout(() => document.getElementById('createTahun').focus(), 300);
+  }
+
+  // ---- Modal Edit ----
+  function openEditModal(pk, tahun, semester, isAktif) {
+    const form = document.getElementById('formEdit');
+    form.action = `/akademik/tahun-ajaran/${pk}/edit/`;
+    document.getElementById('editTahun').value = tahun;
+    document.getElementById('editSemester').value = semester;
+    document.getElementById('editIsAktif').checked = isAktif;
+    openModal('modalEdit');
+    setTimeout(() => document.getElementById('editTahun').focus(), 300);
+  }
+
+  // ---- Modal Hapus ----
+  function openDeleteModal(pk, label) {
+    const form = document.getElementById('formDelete');
+    form.action = `/akademik/tahun-ajaran/${pk}/hapus/`;
+    document.getElementById('deleteLabel').textContent = label;
+    openModal('modalDelete');
+  }
+
+  // ---- Modal Aktifkan ----
+  function openSetAktifModal(pk, label) {
+    const form = document.getElementById('formSetAktif');
+    form.action = `/akademik/tahun-ajaran/${pk}/aktifkan/`;
+    document.getElementById('aktifLabel').textContent = label;
+    openModal('modalSetAktif');
+  }
+
+  // Auto-dismiss alert after 5s
+  setTimeout(() => {
+    const container = document.getElementById('alertContainer');
+    if (container) container.style.display = 'none';
+  }, 5000);
+</script>
+{% endblock %}
