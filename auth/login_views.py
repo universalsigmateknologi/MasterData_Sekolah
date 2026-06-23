@@ -5,7 +5,6 @@ from django.contrib.auth.forms import AuthenticationForm
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('siswa:index')
-        
     error_message = None
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
