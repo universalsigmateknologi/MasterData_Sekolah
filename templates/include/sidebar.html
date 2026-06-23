@@ -47,8 +47,8 @@
         </button>
         <div class="submenu-container hidden pl-6 ml-5 border-l border-neutral-150 py-1 space-y-1">
           <a href="{% url 'akademik:tahun_ajaran_list' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Tahun Ajaran</a>
-          <a href="#" onclick="fiturBelumAda()" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Jurusan</a>
-          <a href="#" onclick="fiturBelumAda()" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Kelas</a>
+          <a href="{% url 'akademik:jurusan_list' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Jurusan</a>
+          <a href="{% url 'akademik:kelas_list' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Kelas</a>
         </div>
       </div>
 
