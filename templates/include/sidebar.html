@@ -21,7 +21,108 @@
     <!-- Navigation Scrollable -->
     <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
       {% block sidebar_nav %}
-      <a href="{% url 'siswa:index' %}" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative"><span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg><span>Data Siswa</span></a>
+      
+      <!-- Dashboard (Single Item) -->
+      <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative">
+        <span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span>
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- Akademik (Collapsible) -->
+      <div class="space-y-1">
+        <button onclick="toggleSubmenu(this)" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group cursor-pointer">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            </svg>
+            <span>Master Data</span>
+          </div>
+          <svg class="w-4 h-4 transition-transform duration-200 submenu-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div class="submenu-container hidden pl-6 ml-5 border-l border-neutral-150 py-1 space-y-1">
+          <a href="#" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Tahun Ajaran</a>
+          <a href="#" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Jurusan</a>
+          <a href="#" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Kelas</a>
+        </div>
+      </div>
+
+      <!-- Kesiswaan (Collapsible) -->
+      <div class="space-y-1">
+        <button onclick="toggleSubmenu(this)" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group cursor-pointer">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+            </svg>
+            <span>Kesiswaan</span>
+          </div>
+          <svg class="w-4 h-4 transition-transform duration-200 submenu-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div class="submenu-container hidden pl-6 ml-5 border-l border-neutral-150 py-1 space-y-1">
+          <a href="{% url 'siswa:index' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Data Siswa</a>
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const currentUrl = window.location.pathname;
+          
+          // Check simple menu item (Dashboard)
+          const dashboardLink = document.querySelector('a[href="{% url "siswa:index" %}"]');
+          // Dashboard is only active if at root "/" precisely (since /siswa/ has its own sub-item)
+          if (dashboardLink && (currentUrl === '/')) {
+            dashboardLink.classList.remove('text-neutral-500');
+            dashboardLink.classList.add('bg-neutral-100', 'text-neutral-800', 'font-medium');
+            const indicator = dashboardLink.querySelector('.nav-indicator');
+            if (indicator) indicator.classList.remove('opacity-0');
+          }
+
+          // Check submenus
+          const submenus = document.querySelectorAll('.submenu-container');
+          submenus.forEach(submenu => {
+            const links = submenu.querySelectorAll('a');
+            let hasActiveChild = false;
+            links.forEach(link => {
+              const href = link.getAttribute('href');
+              if (href && href !== '#' && (currentUrl === href || currentUrl.startsWith(href))) {
+                link.classList.remove('text-neutral-500');
+                link.classList.add('bg-neutral-100', 'text-neutral-900', 'font-semibold');
+                hasActiveChild = true;
+              }
+            });
+            if (hasActiveChild) {
+              submenu.classList.remove('hidden');
+              const button = submenu.previousElementSibling;
+              if (button) {
+                const chevron = button.querySelector('.submenu-chevron');
+                if (chevron) chevron.classList.add('rotate-180');
+                button.classList.remove('text-neutral-500');
+                button.classList.add('text-neutral-900', 'font-semibold');
+              }
+            }
+          });
+        });
+
+        function toggleSubmenu(button) {
+          const parent = button.parentElement;
+          const submenu = parent.querySelector('.submenu-container');
+          const chevron = button.querySelector('.submenu-chevron');
+          if (submenu.classList.contains('hidden')) {
+            submenu.classList.remove('hidden');
+            chevron.classList.add('rotate-180');
+          } else {
+            submenu.classList.add('hidden');
+            chevron.classList.remove('rotate-180');
+          }
+        }
+      </script>
       {% endblock %}
     </nav>
 
