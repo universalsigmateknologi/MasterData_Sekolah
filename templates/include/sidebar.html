@@ -73,19 +73,16 @@
       </div>
 
       <script>
-        // alert jika fitur belum ada
-
         function fiturBelumAda() {
           alert('Fitur ini sedang dalam pengembangan, silahkan coba lagi lain waktu');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
           const currentUrl = window.location.pathname;
-          
+
           // Check simple menu item (Dashboard)
-          const dashboardLink = document.querySelector('a[href="{% url "siswa:index" %}"]');
-          // Dashboard is only active if at root "/" precisely (since /siswa/ has its own sub-item)
-          if (dashboardLink && (currentUrl === '/')) {
+          const dashboardLink = document.querySelector('a[href="{% url "dashboard:dashboard" %}"]');
+          if (dashboardLink && currentUrl === '{% url "dashboard:dashboard" %}') {
             dashboardLink.classList.remove('text-neutral-500');
             dashboardLink.classList.add('bg-neutral-100', 'text-neutral-800', 'font-medium');
             const indicator = dashboardLink.querySelector('.nav-indicator');
