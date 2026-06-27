@@ -170,6 +170,22 @@ def export_siswa_excel(request):
     search = request.GET.get('search')
     status = request.GET.get('status')
     jenis_kelamin = request.GET.get('jenis_kelamin')
+    kelas_filter = request.GET.get('kelas_filter')
+
+    active_ta = TahunAjaran.objects.filter(is_aktif=True).first()
+
+    if active_ta and kelas_filter:
+        if kelas_filter == 'none':
+            placed_ids = PenempatanKelas.objects.filter(
+                tahun_ajaran=active_ta
+            ).values_list('siswa_id', flat=True)
+            queryset = queryset.exclude(id__in=placed_ids)
+        else:
+            placed_ids = PenempatanKelas.objects.filter(
+                kelas_id=kelas_filter,
+                tahun_ajaran=active_ta
+            ).values_list('siswa_id', flat=True)
+            queryset = queryset.filter(id__in=placed_ids)
 
     if search:
         queryset = queryset.filter(
@@ -224,6 +240,13 @@ def export_siswa_excel(request):
     if jenis_kelamin:
         jk_str = "Laki-laki" if jenis_kelamin == "L" else "Perempuan"
         filters_desc.append(f"Jenis Kelamin: {jk_str}")
+    if kelas_filter:
+        if kelas_filter == 'none':
+            filters_desc.append("Kelas: Belum Memiliki Kelas")
+        else:
+            kelas_nama = Kelas.objects.filter(id=kelas_filter).first()
+            if kelas_nama:
+                filters_desc.append(f"Kelas: {kelas_nama.nama_kelas}")
     
     if filters_desc:
         ws['A3'] = f"Filter aktif: {', '.join(filters_desc)}"
