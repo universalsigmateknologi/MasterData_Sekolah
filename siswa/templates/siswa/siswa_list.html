@@ -34,6 +34,7 @@
     {% endfor %}
   </div>
   {% endif %}
+  
   <!-- Toolbar -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div>
@@ -41,7 +42,7 @@
       <p class="text-sm text-neutral-400 mt-0.5">Kelola data buku induk siswa</p>
     </div>
     <div class="flex items-center gap-2">
-      <a href="{% url 'siswa:export_excel' %}?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}{% endif %}" class="inline-flex items-center gap-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-200 px-4 py-2.5 rounded-xl hover:bg-neutral-50 transition-all shadow-sm">
+      <a href="{% url 'siswa:export_excel' %}?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}{% if kelas_filter %}kelas_filter={{ kelas_filter }}{% endif %}" class="inline-flex items-center gap-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-200 px-4 py-2.5 rounded-xl hover:bg-neutral-50 transition-all shadow-sm">
         <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
@@ -66,6 +67,15 @@
         <input type="text" name="search" value="{{ search_query }}" placeholder="Cari nama, NISN, NIK..." class="bg-transparent text-sm outline-none w-full text-neutral-700 placeholder-neutral-400">
       </div>
 
+      <!-- Filter Kelas Baru -->
+      <select name="kelas_filter" class="text-xs font-medium bg-white border border-border-light rounded-xl px-3 py-2 outline-none text-neutral-600 cursor-pointer">
+        <option value="">Semua Kelas</option>
+        <option value="none" {% if kelas_filter == 'none' %}selected{% endif %}>Belum Memiliki Kelas</option>
+        {% for k in list_kelas %}
+        <option value="{{ k.id }}" {% if kelas_filter == k.id|stringformat:"s" %}selected{% endif %}>{{ k.nama_kelas }}{% if k.jurusan %} - {{ k.jurusan.nama_jurusan }}{% endif %}</option>
+        {% endfor %}
+      </select>
+
       <select name="status" class="text-xs font-medium bg-white border border-border-light rounded-xl px-3 py-2 outline-none text-neutral-600 cursor-pointer">
         <option value="">Semua Status</option>
         <option value="Aktif" {% if status_filter == 'Aktif' %}selected{% endif %}>Aktif</option>
@@ -81,7 +91,7 @@
       </select>
 
       <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800 transition-all">Filter</button>
-      <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200 transition-all">Reset</a>
+      <a href="{% url 'siswa:index' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200 transition-all text-center">Reset</a>
     </form>
   </div>
 
@@ -89,7 +99,7 @@
   <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
     <div class="flex items-center justify-between p-5 md:p-6 border-b border-border-light">
       <h3 class="font-semibold text-neutral-800 text-base">Daftar Siswa</h3>
-      <span class="text-sm text-neutral-400">{{ siswa_list|length }} siswa</span>
+      <span class="text-sm text-neutral-400">{{ page_obj.paginator.count }} siswa</span>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
@@ -156,10 +166,10 @@
     <!-- Pagination -->
     {% if is_paginated %}
     <div class="flex items-center justify-between px-6 py-4 border-t border-border-light text-sm">
-      <span class="text-neutral-400">Menampilkan {{ page_obj.start_index }} - {{ page_obj.end_index }} dari {{ paginator.count }} siswa</span>
+      <span class="text-neutral-400">Menampilkan {{ page_obj.start_index }} - {{ page_obj.end_index }} dari {{ page_obj.paginator.count }} siswa</span>
       <div class="flex items-center gap-1">
         {% if page_obj.has_previous %}
-        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-500">
+        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}{% if kelas_filter %}kelas_filter={{ kelas_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-500">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
@@ -176,12 +186,12 @@
           {% if page_obj.number == num %}
             <button class="px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-medium">{{ num }}</button>
           {% else %}
-            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}page={{ num }}" class="px-3 py-1.5 rounded-lg hover:bg-neutral-100 text-neutral-600 text-xs font-medium">{{ num }}</a>
+            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}{% if kelas_filter %}kelas_filter={{ kelas_filter }}&{% endif %}page={{ num }}" class="px-3 py-1.5 rounded-lg hover:bg-neutral-100 text-neutral-600 text-xs font-medium">{{ num }}</a>
           {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
-        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}page={{ page_obj.next_page_number }}" class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-500">
+        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}{% if kelas_filter %}kelas_filter={{ kelas_filter }}&{% endif %}page={{ page_obj.next_page_number }}" class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-500">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>

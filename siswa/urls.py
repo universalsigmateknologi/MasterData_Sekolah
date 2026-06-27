@@ -1,12 +1,12 @@
 from django.urls import path
-from .views import SiswaListView, SiswaCreateView, SiswaUpdateView, SiswaDeleteView, export_siswa_excel
+from .views import siswa_list, SiswaCreateView, SiswaUpdateView, SiswaDeleteView, export_siswa_excel
 from .views_import import SiswaImportView, download_template
 from .views_detail import SiswaDetailView, DokumenSiswaCreateView, DokumenSiswaUpdateView, DokumenSiswaDeleteView
 
 app_name = 'siswa'
 
 urlpatterns = [
-    path('', SiswaListView.as_view(), name='index'),
+    path('', siswa_list, name='index'),
     path('tambah/', SiswaCreateView.as_view(), name='create'),
     path('import/', SiswaImportView.as_view(), name='import'),
     path('download-template/', download_template, name='download_template'),

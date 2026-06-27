@@ -19,47 +19,87 @@ DataOrangTuaFormSet = inlineformset_factory(
     extra=1, can_delete=False, can_delete_extra=False
 )
 
-class SiswaListView(LoginRequiredMixin, ListView):
-    model = Siswa
-    template_name = 'siswa/siswa_list.html'
-    context_object_name = 'siswa_list'
-    paginate_by = 10
+from django.shortcuts import render
+from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from .models import Siswa
+from akademik.models import Kelas, TahunAjaran
+from kesiswaan.models import PenempatanKelas
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        search = self.request.GET.get('search')
-        status = self.request.GET.get('status')
-        jenis_kelamin = self.request.GET.get('jenis_kelamin')
+def siswa_list(request):
+    # Mengambil parameter GET untuk filter
+    search_query = request.GET.get('search', '')
+    status_filter = request.GET.get('status', '')
+    jk_filter = request.GET.get('jenis_kelamin', '')
+    kelas_filter = request.GET.get('kelas_filter', '')
 
-        if search:
-            queryset = queryset.filter(
-                Q(nama_lengkap__icontains=search) |
-                Q(nisn__icontains=search) |
-                Q(nik__icontains=search)
-            )
-        if status:
-            queryset = queryset.filter(status_siswa=status)
-        if jenis_kelamin:
-            queryset = queryset.filter(jenis_kelamin=jenis_kelamin)
-        return queryset
+    # Mendapatkan Tahun Ajaran yang sedang aktif sebagai acuan kelas
+    active_ta = TahunAjaran.objects.filter(is_aktif=True).first()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['search_query'] = self.request.GET.get('search', '')
-        context['status_filter'] = self.request.GET.get('status', '')
-        context['jk_filter'] = self.request.GET.get('jenis_kelamin', '')
+    # Base queryset
+    queryset = Siswa.objects.all().order_by('-created_at')
 
-        paginator = context['paginator']
-        current_page = context['page_obj'].number
-        page_range = []
-        for num in paginator.page_range:
-            if num <= 3 or num > paginator.num_pages - 3:
-                page_range.append(num)
-            elif abs(num - current_page) <= 2:
-                page_range.append(num)
-        context['page_range'] = page_range
+    # Logika Filter Berdasarkan Kelas (Hanya berlaku jika ada TA aktif)
+    if active_ta:
+        if kelas_filter == 'none':
+            # Jika filter "Belum memiliki kelas", exclude siswa yang sudah ada di PenempatanKelas
+            placed_ids = PenempatanKelas.objects.filter(
+                tahun_ajaran=active_ta
+            ).values_list('siswa_id', flat=True)
+            queryset = queryset.exclude(id__in=placed_ids)
+        elif kelas_filter:
+            # Jika memilih kelas tertentu, filter siswa yang ada di kelas tersebut
+            placed_ids = PenempatanKelas.objects.filter(
+                kelas_id=kelas_filter,
+                tahun_ajaran=active_ta
+            ).values_list('siswa_id', flat=True)
+            queryset = queryset.filter(id__in=placed_ids)
 
-        return context
+    # Logika Filter Lainnya
+    if search_query:
+        queryset = queryset.filter(
+            Q(nama_lengkap__icontains=search_query) |
+            Q(nisn__icontains=search_query) |
+            Q(nik__icontains=search_query)
+        )
+    if status_filter:
+        queryset = queryset.filter(status_siswa=status_filter)
+    if jk_filter:
+        queryset = queryset.filter(jenis_kelamin=jk_filter)
+
+    # Pagination
+    paginator = Paginator(queryset, 10)
+    page = request.GET.get('page', 1)
+
+    try:
+        page_obj = paginator.page(page)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+
+    # Logika pembuatan page_range (menghindari nomor halaman kebanyakan)
+    current_page = page_obj.number
+    page_range = []
+    for num in paginator.page_range:
+        if num <= 3 or num > paginator.num_pages - 3:
+            page_range.append(num)
+        elif abs(num - current_page) <= 2:
+            page_range.append(num)
+
+    context = {
+        'siswa_list': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_range': page_range,
+        # Nilai filter saat ini
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'jk_filter': jk_filter,
+        'kelas_filter': kelas_filter,
+        # Opsi dropdown
+        'list_kelas': Kelas.objects.select_related('jurusan').order_by('tingkat', 'nama_kelas'),
+    }
+    
+    return render(request, 'siswa/siswa_list.html', context)
 
 
 class SiswaCreateView(LoginRequiredMixin, CreateView):
