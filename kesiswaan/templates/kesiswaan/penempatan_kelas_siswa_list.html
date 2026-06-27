@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Penempatan Kelas{% endblock %}
+
+{% block breadcrumb_active %}Penempatan Kelas Siswa{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4"> <!-- pb-24 untuk memberi ruang floating bar -->
+
+  <!-- Django Messages -->
+  {% if messages %}
+  <div id="alertContainer" class="space-y-2">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl border text-sm animate-slide-down
+      {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+      {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+      {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}"
+      role="alert">
+      {% if message.tags == 'success' %}
+        <svg class="w-4 h-4 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      {% else %}
+        <svg class="w-4 h-4 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      {% endif %}
+      <span>{{ message }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-auto p-0.5 rounded-lg hover:opacity-70 transition-opacity">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Toolbar -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Penempatan Kelas</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">Pilih siswa yang belum memiliki kelas untuk ditempatkan</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+    <form method="get" class="flex flex-col sm:flex-row gap-3">
+      <div class="flex-1 flex items-center gap-2 bg-neutral-100 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-neutral-300 focus-within:bg-white transition-all">
+        <svg class="w-4 h-4 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Cari nama siswa, NISN..." class="bg-transparent text-sm outline-none w-full text-neutral-700 placeholder-neutral-400">
+      </div>
+
+      <select name="tahun_ajaran" class="text-xs font-medium bg-white border border-border-light rounded-xl px-3 py-2 outline-none text-neutral-600 cursor-pointer">
+        <option value="">Pilih Tahun Ajaran</option>
+        {% for ta in list_ta %}
+        <option value="{{ ta.id }}" {% if ta_filter == ta.id|stringformat:"s" %}selected{% endif %}>{{ ta.tahun }} - {{ ta.semester }} {% if ta.is_aktif %}(Aktif){% endif %}</option>
+        {% endfor %}
+      </select>
+
+      <select name="jenis_kelamin" class="text-xs font-medium bg-white border border-border-light rounded-xl px-3 py-2 outline-none text-neutral-600 cursor-pointer">
+        <option value="">Semua JK</option>
+        <option value="L" {% if jk_filter == 'L' %}selected{% endif %}>Laki-laki</option>
+        <option value="P" {% if jk_filter == 'P' %}selected{% endif %}>Perempuan</option>
+      </select>
+
+      <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800 transition-all">Terapkan</button>
+      <a href="{% url 'kesiswaan:penempatan_kelas_list' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200 transition-all text-center">Reset</a>
+    </form>
+  </div>
+
+  <!-- Form untuk Bulk Action (POST) -->
+  <form method="POST" action="{{ request.get_full_path }}" id="bulkForm">
+    {% csrf_token %}
+    <input type="hidden" name="target_ta" value="{{ ta_filter }}">
+    
+    <!-- Table -->
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between p-5 md:p-6 border-b border-border-light">
+        <h3 class="font-semibold text-neutral-800 text-base">Siswa Belum Terplacement</h3>
+        <span class="text-sm text-neutral-400">{{ page_obj.paginator.count }} siswa</span>
+      </div>
+      
+      {% if ta_filter %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-neutral-50 text-neutral-500 text-xs font-medium uppercase tracking-wider">
+              <th class="text-left px-6 py-3.5 w-10">
+                <input type="checkbox" id="selectAll" class="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 cursor-pointer accent-neutral-900">
+              </th>
+              <th class="text-left px-6 py-3.5">NISN</th>
+              <th class="text-left px-6 py-3.5">Nama Lengkap</th>
+              <th class="text-left px-6 py-3.5 hidden md:table-cell">Jenis Kelamin</th>
+              <th class="text-left px-6 py-3.5 hidden lg:table-cell">Agama</th>
+              <th class="text-center px-6 py-3.5">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border-light">
+            {% for siswa in page_obj %}
+            <tr class="hover:bg-neutral-50 transition-colors">
+              <td class="px-6 py-4">
+                <input type="checkbox" name="selected_siswa" value="{{ siswa.id }}" class="siswa-checkbox w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 cursor-pointer accent-neutral-900">
+              </td>
+              <td class="px-6 py-4 font-medium text-neutral-800">{{ siswa.nisn|default:'-' }}</td>
+              <td class="px-6 py-4 text-neutral-600">{{ siswa.nama_lengkap }}</td>
+              <td class="px-6 py-4 text-neutral-600 hidden md:table-cell">
+                {% if siswa.jenis_kelamin == 'L' %}Laki-laki{% else %}Perempuan{% endif %}
+              </td>
+              <td class="px-6 py-4 text-neutral-500 hidden lg:table-cell">{{ siswa.agama|default:'-' }}</td>
+              <td class="px-6 py-4">
+                <div class="flex items-center justify-center">
+                  <a href="{% url 'siswa:detail' siswa.pk %}" class="p-1.5 rounded-lg hover:bg-neutral-200 transition-colors text-neutral-600" title="Lihat Profil">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center text-neutral-400">
+                <svg class="w-12 h-12 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Semua siswa sudah memiliki penempatan kelas pada tahun ajaran ini.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <div class="flex items-center justify-between px-6 py-4 border-t border-border-light text-sm">
+        <span class="text-neutral-400 hidden sm:inline">Menampilkan {{ page_obj.start_index }} - {{ page_obj.end_index }} dari {{ page_obj.paginator.count }} siswa</span>
+        <div class="flex items-center gap-1 ml-auto">
+          {% if page_obj.has_previous %}
+          <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if ta_filter %}tahun_ajaran={{ ta_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </a>
+          {% else %}
+          <button class="p-2 rounded-lg text-neutral-300" disabled><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
+          {% endif %}
+
+          {% for num in page_range %}
+            {% if page_obj.number == num %}
+              <button class="px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-medium">{{ num }}</button>
+            {% else %}
+              <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if ta_filter %}tahun_ajaran={{ ta_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}page={{ num }}" class="px-3 py-1.5 rounded-lg hover:bg-neutral-100 text-neutral-600 text-xs font-medium">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+          <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if ta_filter %}tahun_ajaran={{ ta_filter }}&{% endif %}{% if jk_filter %}jenis_kelamin={{ jk_filter }}&{% endif %}page={{ page_obj.next_page_number }}" class="p-2 rounded-lg hover:bg-neutral-100 text-neutral-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </a>
+          {% else %}
+          <button class="p-2 rounded-lg text-neutral-300" disabled><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      
+      {% else %}
+      <div class="p-12 text-center text-neutral-400">
+        <svg class="w-12 h-12 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p class="font-medium text-neutral-500">Silakan pilih Tahun Ajaran terlebih dahulu</p>
+        <p class="text-xs mt-1">Gunakan filter di atas untuk memilih tahun ajaran</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Floating Bulk Action Bar -->
+    <div id="actionBar" class="fixed bottom-0 left-0 right-0 md:left-64 bg-white/95 backdrop-blur-md border-t border-border-light p-4 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-transform duration-300 translate-y-full">
+      <div class="flex items-center justify-between gap-4 max-w-screen-xl mx-auto">
+        <div class="flex items-center gap-3">
+          <span id="selectedCount" class="text-sm font-medium text-neutral-800">0 siswa dipilih</span>
+          <button type="button" onclick="clearSelection()" class="text-xs text-neutral-500 hover:text-red-500 transition-colors">Batal Pilih</button>
+        </div>
+        <div class="flex items-center gap-3">
+          <select name="target_kelas" required class="text-xs font-medium bg-neutral-100 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
+            <option value="">-- Pilih Kelas Tujuan --</option>
+            {% for k in list_kelas %}
+            <option value="{{ k.id }}">{{ k.nama_kelas }}{% if k.jurusan %} - {{ k.jurusan.nama_jurusan }}{% endif %}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="inline-flex items-center gap-2 text-xs font-medium text-white bg-neutral-900 px-5 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Tempatkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.siswa-checkbox');
+    const actionBar = document.getElementById('actionBar');
+    const selectedCount = document.getElementById('selectedCount');
+
+    // Toggle Select All
+    if (selectAll) {
+      selectAll.addEventListener('change', function(e) {
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+        updateActionBar();
+      });
+    }
+
+    // Individual checkbox change
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        // Update "Select All" state
+        if (selectAll) {
+          selectAll.checked = [...checkboxes].every(c => c.checked);
+          selectAll.indeterminate = ![...checkboxes].every(c => c.checked) && [...checkboxes].some(c => c.checked);
+        }
+        updateActionBar();
+      });
+    });
+
+    function updateActionBar() {
+      const checkedBoxes = document.querySelectorAll('.siswa-checkbox:checked');
+      const count = checkedBoxes.length;
+      
+      if (count > 0) {
+        actionBar.classList.remove('translate-y-full');
+        selectedCount.textContent = `${count} siswa dipilih`;
+      } else {
+        actionBar.classList.add('translate-y-full');
+      }
+    }
+
+    // Expose clearSelection globally
+    window.clearSelection = function() {
+      checkboxes.forEach(cb => cb.checked = false);
+      if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      }
+      updateActionBar();
+    };
+  });
+</script>
+{% endblock %}
+{% endblock %}
