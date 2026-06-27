@@ -10,6 +10,7 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('auth.urls', namespace='auth')),
+    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('siswa/', include('siswa.urls', namespace='siswa')),
     path('akademik/', include('akademik.urls', namespace='akademik')),
     path('kesiswaan/', include('kesiswaan.urls', namespace='kesiswaan')),
