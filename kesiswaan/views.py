@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.decorators import login_required
 from .models import PenempatanKelas, MutasiSiswa
 from akademik.models import Kelas, TahunAjaran
 from siswa.models import Siswa
@@ -98,7 +99,7 @@ def penempatan_kelas_list(request):
     
     return render(request, 'kesiswaan/penempatan_kelas_siswa_list.html', context)
 
-
+@login_required
 def mutasi_siswa_list(request):
     # Mengambil parameter GET untuk filter
     search_query = request.GET.get('search', '')
