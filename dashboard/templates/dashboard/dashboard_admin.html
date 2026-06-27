@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block breadcrumb_active %}Ringkasan{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Card: Total Siswa -->
+    <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Total Siswa</span>
+        <div class="w-8 h-8 bg-neutral-100 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-neutral-900 tracking-tight">{{ total_siswa }}</p>
+      <p class="text-xs text-neutral-400 mt-1">Terdaftar dalam sistem</p>
+    </div>
+
+    <!-- Card: Siswa Aktif -->
+    <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Siswa Aktif</span>
+        <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-neutral-900 tracking-tight">{{ siswa_aktif }}</p>
+      <p class="text-xs text-green-600 mt-1 font-medium">+ {{ siswa_lulus }} Lulus, {{ siswa_mutasi }} Mutasi</p>
+    </div>
+
+    <!-- Card: Belum Punya Kelas -->
+    <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Belum Punya Kelas</span>
+        <div class="w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-neutral-900 tracking-tight">{{ siswa_belum_penempatan }}</p>
+      <p class="text-xs text-neutral-400 mt-1">Pada TA {% if active_ta %}{{ active_ta.tahun }}{% else %}-{% endif %}</p>
+    </div>
+
+    <!-- Card: Master Data -->
+    <div class="bg-white rounded-2xl p-5 border border-border-light shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Master Data</span>
+        <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-neutral-900 tracking-tight">{{ total_kelas }}</p>
+      <p class="text-xs text-neutral-400 mt-1">{{ total_jurusan }} Jurusan terdaftar</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Kolom Kiri: Progress Penempatan & Demografi -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Progress Penempatan Kelas -->
+      <div class="bg-white rounded-2xl p-6 border border-border-light shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-semibold text-neutral-800">Progress Penempatan Kelas</h3>
+            <p class="text-xs text-neutral-400 mt-0.5">Tahun Ajaran: {% if active_ta %}<span class="font-medium text-neutral-600">{{ active_ta.tahun }} - {{ active_ta.semester }}</span>{% else %}<span class="text-red-500 font-medium">Belum ada TA aktif</span>{% endif %}</p>
+          </div>
+          {% if active_ta %}
+            <a href="{% url 'kesiswaan:penempatan_kelas_list' %}?tahun_ajaran={{ active_ta.id }}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-3 py-1.5 rounded-lg hover:bg-neutral-200 transition-all">
+              Kelola
+            </a>
+          {% endif %}
+        </div>
+        
+        {% if active_ta %}
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="text-neutral-600 font-medium">Sudah Ditempatkan</span>
+              <span class="text-neutral-900 font-bold">{{ siswa_sudah_penempatan }} siswa</span>
+            </div>
+            <div class="w-full h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div class="h-full bg-neutral-900 rounded-full transition-all duration-500" style="width: {{ persen_penempatan }}%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="text-neutral-600 font-medium">Belum Ditempatkan</span>
+              <span class="text-neutral-900 font-bold">{{ siswa_belum_penempatan }} siswa</span>
+            </div>
+            <div class="w-full h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div class="h-full bg-yellow-400 rounded-full transition-all duration-500" style="width: {% widthratio siswa_belum_penempatan siswa_aktif 100 %}%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-border-light text-center">
+          <span class="text-2xl font-bold text-neutral-900">{{ persen_penempatan }}%</span>
+          <span class="text-sm text-neutral-400 ml-1">Penempatan Selesai</span>
+        </div>
+        {% else %}
+        <div class="py-8 text-center text-sm text-neutral-400">
+          Silakan aktifkan Tahun Ajaran terlebih dahulu untuk melihat progress.
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Distribusi Jenis Kelamin & Agama -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Gender -->
+        <div class="bg-white rounded-2xl p-6 border border-border-light shadow-sm">
+          <h3 class="font-semibold text-neutral-800 mb-4">Jenis Kelamin</h3>
+          <div class="flex items-end gap-4 h-36">
+            <!-- Bar Laki-laki -->
+            <div class="flex-1 flex flex-col items-center justify-end h-full">
+              <span class="text-sm font-bold text-neutral-800 mb-2">{{ laki_laki }}</span>
+              <div class="w-full bg-neutral-900 rounded-t-lg transition-all duration-500" style="height: {% widthratio laki_laki siswa_aktif 100 %}%"></div>
+              <span class="text-xs text-neutral-500 mt-2">Laki-laki</span>
+            </div>
+            <!-- Bar Perempuan -->
+            <div class="flex-1 flex flex-col items-center justify-end h-full">
+              <span class="text-sm font-bold text-neutral-800 mb-2">{{ perempuan }}</span>
+              <div class="w-full bg-neutral-400 rounded-t-lg transition-all duration-500" style="height: {% widthratio perempuan siswa_aktif 100 %}%"></div>
+              <span class="text-xs text-neutral-500 mt-2">Perempuan</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agama -->
+        <div class="bg-white rounded-2xl p-6 border border-border-light shadow-sm">
+          <h3 class="font-semibold text-neutral-800 mb-4">Agama</h3>
+          <div class="space-y-3">
+            {% for agama in agama_stats %}
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-neutral-600">{{ agama.agama|default:"Tidak diisi" }}</span>
+                <span class="font-medium text-neutral-800">{{ agama.count }}</span>
+              </div>
+              <div class="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                <div class="h-full bg-neutral-800 rounded-full" style="width: {% widthratio agama.count siswa_aktif 100 %}%"></div>
+              </div>
+            </div>
+            {% empty %}
+            <p class="text-xs text-neutral-400 text-center py-4">Belum ada data</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kolom Kanan: Siswa Terbaru -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-2xl border border-border-light shadow-sm h-full flex flex-col">
+        <div class="flex items-center justify-between p-5 pb-0">
+          <h3 class="font-semibold text-neutral-800">Siswa Terbaru</h3>
+          <a href="{% url 'siswa:index' %}" class="text-xs text-neutral-400 hover:text-neutral-600 transition-colors">Lihat semua</a>
+        </div>
+        
+        <div class="flex-1 p-5 pt-4 divide-y divide-border-light overflow-y-auto">
+          {% for siswa in siswa_terbaru %}
+          <a href="{% url 'siswa:detail' siswa.pk %}" class="flex items-center gap-3 py-3 first:pt-0 last:pb-0 group">
+            <div class="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center text-xs font-bold text-neutral-500 shrink-0 group-hover:bg-neutral-200 transition-colors">
+              {{ siswa.nama_lengkap|make_list|first }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-neutral-800 truncate group-hover:text-neutral-900 transition-colors">{{ siswa.nama_lengkap }}</p>
+              <p class="text-xs text-neutral-400">NISN: {{ siswa.nisn|default:'-' }}</p>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium 
+              {% if siswa.status_siswa == 'Aktif' %}bg-green-50 text-green-700
+              {% elif siswa.status_siswa == 'Lulus' %}bg-blue-50 text-blue-700
+              {% else %}bg-neutral-100 text-neutral-500{% endif %}">
+              {{ siswa.status_siswa }}
+            </span>
+          </a>
+          {% empty %}
+          <div class="py-8 text-center text-sm text-neutral-400">
+            Belum ada data siswa
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

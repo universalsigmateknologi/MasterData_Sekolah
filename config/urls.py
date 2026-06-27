@@ -14,7 +14,7 @@ urlpatterns = [
     path('siswa/', include('siswa.urls', namespace='siswa')),
     path('akademik/', include('akademik.urls', namespace='akademik')),
     path('kesiswaan/', include('kesiswaan.urls', namespace='kesiswaan')),
-    path('', RedirectView.as_view(pattern_name='siswa:index', permanent=True)),
+    path('', RedirectView.as_view(pattern_name='dashboard:dashboard', permanent=True)),
 ]
 
 if settings.DEBUG:

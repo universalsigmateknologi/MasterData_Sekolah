@@ -23,7 +23,7 @@
       {% block sidebar_nav %}
       
       <!-- Dashboard (Single Item) -->
-      <a href="#" onclick="fiturBelumAda()"  class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative">
+      <a href="{% url 'dashboard:dashboard' %}"  class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative">
         <span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span>
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
@@ -68,6 +68,7 @@
         <div class="submenu-container hidden pl-6 ml-5 border-l border-neutral-150 py-1 space-y-1">
           <a href="{% url 'siswa:index' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Data Siswa</a>
           <a href="{% url 'kesiswaan:penempatan_kelas_list' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Penempatan Kelas Siswa</a>
+          <a href="{% url 'kesiswaan:mutasi_list' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Mutasi Siswa</a>
         </div>
       </div>
 

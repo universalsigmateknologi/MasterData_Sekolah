@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import PenempatanKelas
+from .models import PenempatanKelas, MutasiSiswa
 from akademik.models import Kelas, TahunAjaran
 from siswa.models import Siswa
 
@@ -97,3 +97,59 @@ def penempatan_kelas_list(request):
     }
     
     return render(request, 'kesiswaan/penempatan_kelas_siswa_list.html', context)
+
+
+def mutasi_siswa_list(request):
+    # Mengambil parameter GET untuk filter
+    search_query = request.GET.get('search', '')
+    jenis_filter = request.GET.get('jenis_mutasi', '')
+
+    # Base queryset dengan select_related untuk optimasi db query
+    queryset = MutasiSiswa.objects.select_related('siswa').order_by('-tanggal_mutasi', '-created_at')
+
+    # Logika filtering
+    if search_query:
+        queryset = queryset.filter(
+            Q(siswa__nama_lengkap__icontains=search_query) | 
+            Q(siswa__nisn__icontains=search_query) |
+            Q(no_surat_mutasi__icontains=search_query)
+        )
+    if jenis_filter:
+        queryset = queryset.filter(jenis_mutasi=jenis_filter)
+
+    # Pagination
+    paginator = Paginator(queryset, 10) # 10 item per halaman
+    page = request.GET.get('page', 1)
+
+    try:
+        page_obj = paginator.page(page)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+
+    # Logika untuk menampilkan rentang halaman dinamis di pagination
+    current_page = page_obj.number
+    total_pages = paginator.num_pages
+    page_range = []
+    for num in paginator.page_range:
+        if num <= 3 or num > total_pages - 3:
+            page_range.append(num)
+        elif abs(num - current_page) <= 2:
+            page_range.append(num)
+
+    # Hitung ringkasan untuk kartu statistik
+    total_mutasi_masuk = MutasiSiswa.objects.filter(jenis_mutasi='Masuk').count()
+    total_mutasi_keluar = MutasiSiswa.objects.filter(jenis_mutasi='Keluar').count()
+
+    context = {
+        'page_obj': page_obj,
+        'page_range': page_range,
+        'is_paginated': page_obj.has_other_pages(),
+        # Nilai filter saat ini
+        'search_query': search_query,
+        'jenis_filter': jenis_filter,
+        # Statistik
+        'total_mutasi_masuk': total_mutasi_masuk,
+        'total_mutasi_keluar': total_mutasi_keluar,
+    }
+    
+    return render(request, 'kesiswaan/mutasi_siswa_list.html', context)
