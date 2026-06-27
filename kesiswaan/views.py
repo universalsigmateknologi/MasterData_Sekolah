@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from .models import PenempatanKelas, MutasiSiswa
 from akademik.models import Kelas, TahunAjaran
 from siswa.models import Siswa
+from .forms import MutasiSiswaForm
+from django.contrib import messages
 
 def penempatan_kelas_list(request):
     if request.method == 'POST':
@@ -154,3 +156,18 @@ def mutasi_siswa_list(request):
     }
     
     return render(request, 'kesiswaan/mutasi_siswa_list.html', context)
+
+def mutasi_create(request):
+    if request.method == 'POST':
+        form = MutasiSiswaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Data mutasi siswa berhasil ditambahkan.')
+            return redirect('kesiswaan:mutasi_list')
+    else:
+        form = MutasiSiswaForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'kesiswaan/mutasi_form.html', context)

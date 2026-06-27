@@ -7,4 +7,5 @@ urlpatterns = [
     # ... url lainnya jika ada ...
     path('', views.penempatan_kelas_list, name='penempatan_kelas_list'),
     path('mutasi/', views.mutasi_siswa_list, name='mutasi_list'),
+    path('mutasi/tambah/', views.mutasi_create, name='mutasi_create'),
 ]
