@@ -164,7 +164,9 @@
     <!-- Sidebar Footer -->
     <div class="border-t border-border-light p-4 flex-shrink-0">
       <div class="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer">
-        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&q=80" alt="User avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-neutral-200 shrink-0" loading="lazy">
+        <div class="w-9 h-9 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold text-sm shrink-0 ring-2 ring-neutral-200">
+          {{ user.username|first|upper }}
+        </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-neutral-800 truncate">{{ user.username }}</p>
           <p class="text-xs text-neutral-400 truncate">{{ user.email }}</p>
