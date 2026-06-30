@@ -48,10 +48,11 @@ def siswa_list(request):
             ).values_list('siswa_id', flat=True)
             queryset = queryset.exclude(id__in=placed_ids)
         elif kelas_filter:
-            # Jika memilih kelas tertentu, filter siswa yang ada di kelas tersebut
+            # Jika memilih kelas tertentu, HANYA tampilkan siswa yang statusnya AKTIF di kelas tersebut
             placed_ids = PenempatanKelas.objects.filter(
                 kelas_id=kelas_filter,
-                tahun_ajaran=active_ta
+                tahun_ajaran=active_ta,
+                keterangan='Aktif' # <-- DITAMBAHKAN
             ).values_list('siswa_id', flat=True)
             queryset = queryset.filter(id__in=placed_ids)
 
