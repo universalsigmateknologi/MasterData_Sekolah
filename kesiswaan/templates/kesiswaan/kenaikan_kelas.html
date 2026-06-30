@@ -152,13 +152,30 @@
           <button type="button" onclick="clearSelection()" class="text-xs text-neutral-500 hover:text-red-500 transition-colors">Batal Pilih</button>
         </div>
         <div class="flex items-center gap-3">
-          <select name="target_kelas" id="targetKelasDropdown" class="text-xs font-medium bg-neutral-100 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
-            <option value="">-- Pilih Kelas Tujuan --</option>
-            {% for k in list_kelas %}
-            <option value="{{ k.id }}">{{ k.nama_kelas }}{% if k.jurusan %} - {{ k.jurusan.nama_jurusan }}{% endif %}</option>
-            {% endfor %}
-          </select>
           
+          {% if is_same_class %}
+            <!-- SCENARIO 1: NAIK SEMESTER (KELAS TETAP) -->
+            <!-- Hidden input untuk mengirim ID kelas yang sama -->
+            <input type="hidden" name="target_kelas" value="{{ kelas_asal_obj.id }}">
+            <!-- UI Tag informatif pengganti dropdown -->
+            <div class="text-xs font-medium bg-neutral-100 border border-border-light rounded-xl px-4 py-2.5 text-neutral-500 flex items-center gap-2">
+              <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Kelas Tetap:</span>
+              <span class="font-semibold text-neutral-800">{{ kelas_asal_obj.nama_kelas }}{% if kelas_asal_obj.jurusan %} - {{ kelas_asal_obj.jurusan.nama_jurusan }}{% endif %}</span>
+            </div>
+          {% else %}
+            <!-- SCENARIO 2: NAIK TINGKAT (DROPDOWN KELAS TUJUAN) -->
+            <select name="target_kelas" id="targetKelasDropdown" class="text-xs font-medium bg-neutral-100 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
+              <option value="">-- Pilih Kelas Naik --</option>
+              {% for k in filtered_kelas_tujuan %}
+              <option value="{{ k.id }}">{{ k.nama_kelas }}{% if k.jurusan %} - {{ k.jurusan.nama_jurusan }}{% endif %}</option>
+              {% endfor %}
+              {% if not filtered_kelas_tujuan and kelas_asal_obj %}
+                <option value="" disabled selected>Tidak ada kelas {{ kelas_asal_obj.tingkat|add:"1" }} jurusan {{ kelas_asal_obj.jurusan }}</option>
+              {% endif %}
+            </select>
+          {% endif %}
+
           <!-- Tombol Kenaikan -->
           <button type="button" onclick="submitAction('naik')" class="inline-flex items-center gap-2 text-xs font-medium text-white bg-neutral-900 px-5 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
@@ -223,16 +240,19 @@
       updateActionBar();
     };
 
-    // Fungsi untuk handle klik tombol aksi
+        // Fungsi untuk handle klik tombol aksi
     window.submitAction = function(actionType) {
       const checkedBoxes = document.querySelectorAll('.placement-checkbox:checked');
       if (checkedBoxes.length === 0) return;
 
       const actionInput = document.getElementById('actionTypeInput');
+      
+      // Cek apakah dropdown visible (bukan kelas tetap)
       const targetKelas = document.getElementById('targetKelasDropdown');
 
       if (actionType === 'naik') {
-        if (!targetKelas.value) {
+        // Hanya validasi jika dropdownnya ada di DOM
+        if (targetKelas && !targetKelas.value) {
           alert('Silakan pilih Kelas Tujuan terlebih dahulu.');
           targetKelas.focus();
           return;
@@ -240,7 +260,7 @@
         if (!confirm(`Apakah Anda yakin ingin menaikkan ${checkedBoxes.length} siswa ke kelas tujuan?`)) {
           return;
         }
-      } else if (actionType === 'tinggal') {
+      } else if (actionType == 'tinggal') {
         if (!confirm(`PERHATIAN!\nAnda akan menandai ${checkedBoxes.length} siswa sebagai "Tinggal Kelas".\nTindakan ini mengubah status kelas mereka saat ini.\n\nLanjutkan?`)) {
           return;
         }

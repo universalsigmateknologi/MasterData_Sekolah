@@ -195,20 +195,19 @@ def kenaikan_kelas_view(request):
     # ------------------- POST LOGIC (PROSES) -------------------
     if request.method == 'POST':
         selected_placement_ids = request.POST.getlist('selected_placements')
-        action_type = request.POST.get('action_type')
+        action_type = request.POST.get('action_type') 
         target_kelas_id = request.POST.get('target_kelas')
-        target_ta_id = request.POST.get('ta_tujuan') # <-- SUDAH DIPERBAIKI
+        target_ta_id = request.POST.get('ta_tujuan')
 
         if not selected_placement_ids:
             messages.error(request, 'Pilih minimal satu siswa untuk diproses.')
         else:
             try:
-                # Ambil query object yang akan diupdate (bukan langsung di-evaluate)
                 old_placements = PenempatanKelas.objects.filter(id__in=selected_placement_ids)
 
                 if action_type == 'naik':
                     if not target_kelas_id or not target_ta_id:
-                        messages.error(request, 'Pilih Kelas Tujuan dan Tahun Ajaran Tujuan.')
+                        messages.error(request, 'Terjadi kesalahan: Kelas tujuan atau TA tujuan tidak valid.')
                     else:
                         # 1. Ubah status kelas lama
                         old_placements.update(keterangan='Naik Kelas')
@@ -228,28 +227,53 @@ def kenaikan_kelas_view(request):
                         messages.success(request, f'Berhasil menaikkan {len(new_placements)} siswa ke kelas {kelas_name}.')
 
                 elif action_type == 'tinggal':
-                    # Hanya mengubah status kelas lama
                     updated = old_placements.update(keterangan='Tinggal Kelas')
                     messages.success(request, f'Berhasil menandai {updated} siswa sebagai Tinggal Kelas.')
 
             except Exception as e:
                 messages.error(request, f'Terjadi kesalahan sistem: {str(e)}')
 
-            # Redirect agar halaman merefresh data terbaru tanpa resubmit form
             return redirect(request.get_full_path())
 
     # ------------------- GET LOGIC (DISPLAY) -------------------
     list_placements = []
+    is_same_class = False
+    kelas_asal_obj = None
+    filtered_kelas_tujuan = []
     
     # Jika filter sudah lengkap, ambil data siswa yang ada di kelas asal tersebut
     if ta_asal_id and kelas_asal_id:
-        list_placements = PenempatanKelas.objects.select_related(
-            'siswa', 'kelas', 'tahun_ajaran'
-        ).filter(
-            tahun_ajaran_id=ta_asal_id,
-            kelas_id=kelas_asal_id,
-            keterangan='Aktif' # Hanya yang statusnya masih aktif di kelas tersebut
-        ).order_by('siswa__nama_lengkap')
+        try:
+            kelas_asal_obj = Kelas.objects.select_related('jurusan').get(id=kelas_asal_id)
+            ta_asal_obj = TahunAjaran.objects.get(id=ta_asal_id)
+            
+            list_placements = PenempatanKelas.objects.select_related(
+                'siswa', 'kelas', 'tahun_ajaran'
+            ).filter(
+                tahun_ajaran_id=ta_asal_id,
+                kelas_id=kelas_asal_id,
+                keterangan='Aktif'
+            ).order_by('siswa__nama_lengkap')
+
+            # LOGIKA DINAMIS KELAS TUJUAN
+            if ta_tujuan_id:
+                ta_tujuan_obj = TahunAjaran.objects.get(id=ta_tujuan_id)
+                
+                # Skenario 1: Ganjil -> Genap (Naik Semester, Kelas Tetap)
+                if ta_asal_obj.semester == 'Ganjil' and ta_tujuan_obj.semester == 'Genap':
+                    is_same_class = True
+                
+                # Skenario 2: Genap -> Ganjil (Naik Tingkat)
+                elif ta_asal_obj.semester == 'Genap' and ta_tujuan_obj.semester == 'Ganjil':
+                    next_tingkat = kelas_asal_obj.tingkat + 1
+                    # Filter kelas yang tingkatnya 1 level di atas, DAN jurusannya sama
+                    filtered_kelas_tujuan = Kelas.objects.filter(
+                        tingkat=next_tingkat,
+                        jurusan=kelas_asal_obj.jurusan
+                    ).order_by('nama_kelas')
+
+        except Exception:
+            pass # Jika ada ID tidak valid di URL, diamkan saja
 
     context = {
         'ta_asal_id': ta_asal_id,
@@ -258,6 +282,10 @@ def kenaikan_kelas_view(request):
         'list_placements': list_placements,
         'list_ta': TahunAjaran.objects.all().order_by('-tahun'),
         'list_kelas': Kelas.objects.select_related('jurusan').order_by('tingkat', 'nama_kelas'),
+        # Variabel Baru untuk Logika Dinamis
+        'is_same_class': is_same_class,
+        'kelas_asal_obj': kelas_asal_obj,
+        'filtered_kelas_tujuan': filtered_kelas_tujuan,
     }
     
     return render(request, 'kesiswaan/kenaikan_kelas.html', context)
