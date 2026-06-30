@@ -29,9 +29,10 @@ def dashboard_admin(request):
         # Total siswa aktif yang seharusnya ditempatkan
         siswa_aktif_count = siswa_aktif
         
-        # Hitung siswa yang sudah memiliki penempatan di TA aktif
+        # Hitung siswa AKTIF yang sudah memiliki penempatan di TA aktif
         siswa_sudah_penempatan = PenempatanKelas.objects.filter(
-            tahun_ajaran=active_ta
+            tahun_ajaran=active_ta,
+            siswa__status_siswa='Aktif'
         ).values('siswa_id').distinct().count()
         
         siswa_belum_penempatan = siswa_aktif_count - siswa_sudah_penempatan
