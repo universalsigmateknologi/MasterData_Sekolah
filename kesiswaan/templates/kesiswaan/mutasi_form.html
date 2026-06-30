@@ -5,7 +5,7 @@
 {% block breadcrumb_active %}Tambah Mutasi{% endblock %}
 
 {% block content %}
-
+<div class="max-w-3xl mx-auto space-y-6">
   
   <!-- Header -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -25,24 +25,55 @@
   <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
     <form method="POST" action="{% url 'kesiswaan:mutasi_create' %}" enctype="multipart/form-data" novalidate>
       {% csrf_token %}
+      {{ form.siswa }} {# Hidden Input #}
       
       <div class="p-6 md:p-8 space-y-6">
         
-        <!-- Row 1: Siswa & Jenis Mutasi -->
+        <!-- Row 1: Custom Dropdown Siswa & Jenis Mutasi -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label for="{{ form.siswa.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1.5">
+          
+          <!-- CUSTOM DROPDOWN SISWA -->
+          <div class="relative" id="siswaDropdownContainer">
+            <label class="block text-sm font-medium text-neutral-700 mb-1.5">
               Siswa <span class="text-red-500">*</span>
             </label>
-            {{ form.siswa }}
-            {% if form.siswa.errors %}
-              <p class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+            
+            <!-- Input Pencarian & Display Terpilih -->
+            <div class="relative">
+              <div class="flex items-center gap-2 bg-neutral-50 border border-border-light rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-neutral-300 focus-within:bg-white transition-all">
+                <svg class="w-4 h-4 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="siswaSearchInput" 
+                  class="bg-transparent text-sm outline-none w-full text-neutral-700 placeholder-neutral-400 cursor-pointer" 
+                  placeholder="Cari NISN atau nama siswa..." 
+                  autocomplete="off"
+                  onfocus="openDropdown()"
+                >
+              </div>
+              <!-- Tombol Clear -->
+              <button type="button" id="clearSiswaBtn" onclick="clearSiswa()" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 text-neutral-400 hidden transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <!-- Daftar Opsi Dropdown -->
+            <div id="siswaOptionsList" class="absolute z-50 w-full mt-1 bg-white border border-border-light rounded-xl shadow-lg max-h-60 overflow-y-auto hidden animate-slide-down">
+              <div class="p-2 text-xs text-neutral-400 text-center py-4">Tidak ada siswa ditemukan</div>
+            </div>
+
+            <!-- Pesan Error -->
+            <div id="siswaErrorMessage" class="mt-1.5 text-xs text-red-500 items-center gap-1 hidden">
+              <div class="flex items-center gap-1">
                 <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                {{ form.siswa.errors.0 }}
-              </p>
-            {% endif %}
+                <span>Siswa wajib dipilih</span>
+              </div>
+            </div>
           </div>
 
+          <!-- Jenis Mutasi (Tetap) -->
           <div>
             <label for="{{ form.jenis_mutasi.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1.5">
               Jenis Mutasi <span class="text-red-500">*</span>
@@ -139,7 +170,7 @@
         <a href="{% url 'kesiswaan:mutasi_list' %}" class="w-full sm:w-fit text-center text-xs font-medium text-neutral-600 bg-white border border-border-light px-5 py-2.5 rounded-xl hover:bg-neutral-100 transition-all">
           Batal
         </a>
-        <button type="submit" class="w-full sm:w-fit inline-flex items-center justify-center gap-2 text-xs font-medium text-white bg-neutral-900 px-6 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
+        <button type="submit" id="submitBtn" class="w-full sm:w-fit inline-flex items-center justify-center gap-2 text-xs font-medium text-white bg-neutral-900 px-6 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
           </svg>
@@ -148,4 +179,123 @@
       </div>
     </form>
   </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data siswa dari Django context
+    const siswaData = [
+        {% for s in list_siswa_aktif %}
+        {
+            id: "{{ s.id }}",
+            nisn: "{{ s.nisn|default:'-' }}",
+            nama: "{{ s.nama_lengkap|escapejs }}",
+            jk: "{{ s.jenis_kelamin }}"
+        },
+        {% endfor %}
+    ];
+
+    const searchInput = document.getElementById('siswaSearchInput');
+    const optionsList = document.getElementById('siswaOptionsList');
+    const hiddenInput = document.getElementById('selected_siswa_id');
+    const clearBtn = document.getElementById('clearSiswaBtn');
+    const errorMsg = document.getElementById('siswaErrorMessage');
+    const container = document.getElementById('siswaDropdownContainer');
+
+    let isDropdownOpen = false;
+
+    // Fungsi untuk render opsi berdasarkan keyword
+    function renderOptions(keyword = '') {
+        const filtered = siswaData.filter(s => 
+            s.nama.toLowerCase().includes(keyword.toLowerCase()) || 
+            s.nisn.includes(keyword)
+        );
+
+        if (filtered.length === 0) {
+            optionsList.innerHTML = '<div class="p-2 text-xs text-neutral-400 text-center py-4">Tidak ada siswa ditemukan</div>';
+        } else {
+            optionsList.innerHTML = filtered.map(s => `
+                <li 
+                    class="px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer transition-colors flex items-center justify-between rounded-lg mx-1 my-0.5"
+                    data-id="${s.id}"
+                    data-nama="${s.nama}"
+                    data-nisn="${s.nisn}"
+                    onclick="selectSiswa(this)"
+                >
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-600 shrink-0">${s.jk === 'L' ? 'L' : 'P'}</span>
+                        <div>
+                            <p class="font-medium text-neutral-800">${s.nama}</p>
+                            <p class="text-xs text-neutral-400">NISN: ${s.nisn}</p>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+        }
+    }
+
+    // Buka dropdown
+    window.openDropdown = function() {
+        if (!isDropdownOpen) {
+            renderOptions(searchInput.value);
+            optionsList.classList.remove('hidden');
+            isDropdownOpen = true;
+        }
+    };
+
+    // Tutup dropdown
+    function closeDropdown() {
+        optionsList.classList.add('hidden');
+        isDropdownOpen = false;
+    }
+
+    // Pilih siswa
+    window.selectSiswa = function(element) {
+        const id = element.getAttribute('data-id');
+        const nama = element.getAttribute('data-nama');
+        const nisn = element.getAttribute('data-nisn');
+
+        hiddenInput.value = id;
+        searchInput.value = `${nisn} - ${nama}`;
+        clearBtn.classList.remove('hidden');
+        errorMsg.classList.add('hidden');
+        closeDropdown();
+    };
+
+    // Bersihkan pilihan
+    window.clearSiswa = function() {
+        hiddenInput.value = '';
+        searchInput.value = '';
+        clearBtn.classList.add('hidden');
+        searchInput.focus();
+    };
+
+    // Event Listener saat mengetik di search
+    searchInput.addEventListener('input', function() {
+        if (!isDropdownOpen) openDropdown();
+        renderOptions(this.value);
+        clearBtn.classList.add('hidden');
+        hiddenInput.value = ''; // Reset id jika sedang mengetik ulang
+    });
+
+    // Tutup dropdown jika klik di luar container
+    document.addEventListener('click', function(e) {
+        if (!container.contains(e.target)) {
+            closeDropdown();
+        }
+    });
+
+    // Validasi manual sebelum submit (karena siswa pakai hidden input)
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!hiddenInput.value) {
+            e.preventDefault();
+            errorMsg.classList.remove('hidden');
+            errorMsg.classList.add('flex');
+            searchInput.focus();
+        }
+    });
+});
+</script>
 {% endblock %}

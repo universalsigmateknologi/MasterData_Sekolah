@@ -1,5 +1,5 @@
 from django import forms
-from .models import MutasiSiswa
+from .models import MutasiSiswa, PenempatanKelas
 from siswa.models import Siswa
 
 class MutasiSiswaForm(forms.ModelForm):
@@ -11,9 +11,10 @@ class MutasiSiswaForm(forms.ModelForm):
             'alasan_mutasi', 'file_surat_mutasi'
         ]
         widgets = {
-            'siswa': forms.Select(attrs={
-                'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-neutral-300 focus:bg-white transition-all cursor-pointer',
-                'placeholder': 'Cari dan pilih siswa...'
+            # DIUBAH: Menjadi HiddenInput karena UI-nya custom
+            'siswa': forms.HiddenInput(attrs={
+                'id': 'selected_siswa_id',
+                'required': True
             }),
             'jenis_mutasi': forms.Select(attrs={
                 'class': 'w-full text-sm bg-neutral-50 border border-border-light rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-neutral-300 focus:bg-white transition-all cursor-pointer'
@@ -42,11 +43,25 @@ class MutasiSiswaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hanya menampilkan siswa dengan status Aktif di dropdown
-        self.fields['siswa'].queryset = Siswa.objects.filter(status_siswa='Aktif').order_by('nama_lengkap')
-        self.fields['siswa'].empty_label = "Pilih Siswa Aktif..."
+        # Queryset tetap diperlukan untuk validasi ModelChoiceField
+        self.fields['siswa'].queryset = Siswa.objects.all()
         
         # Set hari ini sebagai default value untuk tanggal mutasi
         if not self.initial.get('tanggal_mutasi'):
             from datetime import date
             self.initial['tanggal_mutasi'] = date.today()
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            # Update status siswa jika mutasi keluar
+            if instance.jenis_mutasi == 'Keluar':
+                instance.siswa.status_siswa = 'Mutasi Keluar'
+                instance.siswa.save(update_fields=['status_siswa'])
+                # Hapus penempatan kelas aktif siswa
+                PenempatanKelas.objects.filter(
+                    siswa=instance.siswa,
+                    keterangan='Aktif'
+                ).delete()
+        return instance

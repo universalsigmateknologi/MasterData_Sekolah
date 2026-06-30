@@ -161,13 +161,103 @@ def mutasi_create(request):
     if request.method == 'POST':
         form = MutasiSiswaForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Data mutasi siswa berhasil ditambahkan.')
+            mutasi = form.save()
+            if mutasi.jenis_mutasi == 'Keluar':
+                messages.success(request, f'Data mutasi siswa berhasil ditambahkan dan penempatan kelas {mutasi.siswa.nama_lengkap} telah dihapus.')
+            else:
+                messages.success(request, 'Data mutasi siswa berhasil ditambahkan.')
             return redirect('kesiswaan:mutasi_list')
     else:
         form = MutasiSiswaForm()
 
+    # AMBIL DATA SISWA AKTIF UNTUK DROPDOWN CUSTOM
+    list_siswa_aktif = Siswa.objects.filter(status_siswa='Aktif').order_by('nama_lengkap')
+
     context = {
         'form': form,
+        'list_siswa_aktif': list_siswa_aktif, # Dikirim ke template
     }
     return render(request, 'kesiswaan/mutasi_form.html', context)
+
+
+def kenaikan_kelas_view(request):
+    # Mengambil parameter GET untuk setup awal
+    ta_asal_id = request.GET.get('ta_asal', '')
+    kelas_asal_id = request.GET.get('kelas_asal', '')
+    ta_tujuan_id = request.GET.get('ta_tujuan', '')
+
+    active_ta = TahunAjaran.objects.filter(is_aktif=True).first()
+    
+    # Default TA Asal adalah TA yang sedang aktif
+    if not ta_asal_id and active_ta:
+        ta_asal_id = str(active_ta.id)
+
+    # ------------------- POST LOGIC (PROSES) -------------------
+    if request.method == 'POST':
+        selected_placement_ids = request.POST.getlist('selected_placements')
+        action_type = request.POST.get('action_type')
+        target_kelas_id = request.POST.get('target_kelas')
+        target_ta_id = request.POST.get('ta_tujuan') # <-- SUDAH DIPERBAIKI
+
+        if not selected_placement_ids:
+            messages.error(request, 'Pilih minimal satu siswa untuk diproses.')
+        else:
+            try:
+                # Ambil query object yang akan diupdate (bukan langsung di-evaluate)
+                old_placements = PenempatanKelas.objects.filter(id__in=selected_placement_ids)
+
+                if action_type == 'naik':
+                    if not target_kelas_id or not target_ta_id:
+                        messages.error(request, 'Pilih Kelas Tujuan dan Tahun Ajaran Tujuan.')
+                    else:
+                        # 1. Ubah status kelas lama
+                        old_placements.update(keterangan='Naik Kelas')
+                        
+                        # 2. Buat data penempatan kelas baru
+                        new_placements = [
+                            PenempatanKelas(
+                                siswa_id=p.siswa_id,
+                                kelas_id=target_kelas_id,
+                                tahun_ajaran_id=target_ta_id,
+                                keterangan='Aktif'
+                            ) for p in old_placements
+                        ]
+                        PenempatanKelas.objects.bulk_create(new_placements, ignore_conflicts=True)
+                        
+                        kelas_name = Kelas.objects.get(id=target_kelas_id).nama_kelas
+                        messages.success(request, f'Berhasil menaikkan {len(new_placements)} siswa ke kelas {kelas_name}.')
+
+                elif action_type == 'tinggal':
+                    # Hanya mengubah status kelas lama
+                    updated = old_placements.update(keterangan='Tinggal Kelas')
+                    messages.success(request, f'Berhasil menandai {updated} siswa sebagai Tinggal Kelas.')
+
+            except Exception as e:
+                messages.error(request, f'Terjadi kesalahan sistem: {str(e)}')
+
+            # Redirect agar halaman merefresh data terbaru tanpa resubmit form
+            return redirect(request.get_full_path())
+
+    # ------------------- GET LOGIC (DISPLAY) -------------------
+    list_placements = []
+    
+    # Jika filter sudah lengkap, ambil data siswa yang ada di kelas asal tersebut
+    if ta_asal_id and kelas_asal_id:
+        list_placements = PenempatanKelas.objects.select_related(
+            'siswa', 'kelas', 'tahun_ajaran'
+        ).filter(
+            tahun_ajaran_id=ta_asal_id,
+            kelas_id=kelas_asal_id,
+            keterangan='Aktif' # Hanya yang statusnya masih aktif di kelas tersebut
+        ).order_by('siswa__nama_lengkap')
+
+    context = {
+        'ta_asal_id': ta_asal_id,
+        'kelas_asal_id': kelas_asal_id,
+        'ta_tujuan_id': ta_tujuan_id,
+        'list_placements': list_placements,
+        'list_ta': TahunAjaran.objects.all().order_by('-tahun'),
+        'list_kelas': Kelas.objects.select_related('jurusan').order_by('tingkat', 'nama_kelas'),
+    }
+    
+    return render(request, 'kesiswaan/kenaikan_kelas.html', context)

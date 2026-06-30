@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}Kenaikan Kelas{% endblock %}
+
+{% block breadcrumb_active %}Kenaikan Kelas{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4 pb-28"> <!-- pb-28 untuk ruang floating bar ganda -->
+
+  <!-- Django Messages -->
+  {% if messages %}
+  <div id="alertContainer" class="space-y-2">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl border text-sm animate-slide-down
+      {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+      {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+      {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}" role="alert">
+      {% if message.tags == 'success' %}
+        <svg class="w-4 h-4 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      {% else %}
+        <svg class="w-4 h-4 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      {% endif %}
+      <span>{{ message }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-auto p-0.5 rounded-lg hover:opacity-70 transition-opacity">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Proses Kenaikan Kelas</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">Naikkan siswa ke kelas berikutnya atau tandai sebagai tinggal kelas</p>
+    </div>
+    <a href="{% url 'kesiswaan:penempatan_kelas_list' %}" class="inline-flex items-center gap-2 text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all w-fit">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      Kembali ke Penempatan
+    </a>
+  </div>
+
+  <!-- Form Setup Filter Atas -->
+  <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+    <form method="get" id="setupForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <div>
+        <label class="block text-xs font-medium text-neutral-500 mb-1.5">TA Asal (Sekarang)</label>
+        <select name="ta_asal" class="w-full text-xs font-medium bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
+          <option value="">Pilih TA Asal</option>
+          {% for ta in list_ta %}
+          <option value="{{ ta.id }}" {% if ta_asal_id == ta.id|stringformat:"s" %}selected{% endif %}>{{ ta.tahun }} - {{ ta.semester }} {% if ta.is_aktif %}(Aktif){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-neutral-500 mb-1.5">Kelas Asal</label>
+        <select name="kelas_asal" class="w-full text-xs font-medium bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
+          <option value="">Pilih Kelas Asal</option>
+          {% for k in list_kelas %}
+          <option value="{{ k.id }}" {% if kelas_asal_id == k.id|stringformat:"s" %}selected{% endif %}>{{ k.nama_kelas }}{% if k.jurusan %} - {{ k.jurusan.nama_jurusan }}{% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-neutral-500 mb-1.5">TA Tujuan (Baru)</label>
+        <select name="ta_tujuan" class="w-full text-xs font-medium bg-neutral-50 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
+          <option value="">Pilih TA Tujuan</option>
+          {% for ta in list_ta %}
+          <option value="{{ ta.id }}" {% if ta_tujuan_id == ta.id|stringformat:"s" %}selected{% endif %}>{{ ta.tahun }} - {{ ta.semester }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all h-[42px]">
+        Tampilkan Siswa
+      </button>
+    </form>
+  </div>
+
+  <!-- Form Aksi Utama (POST) -->
+  <form method="POST" id="actionForm" action="{% url 'kesiswaan:kenaikan_kelas' %}">
+    {% csrf_token %}
+    <!-- Hidden fields untuk menyimpan state filter GET -->
+    <input type="hidden" name="ta_asal" value="{{ ta_asal_id }}">
+    <input type="hidden" name="kelas_asal" value="{{ kelas_asal_id }}">
+    <input type="hidden" name="ta_tujuan" value="{{ ta_tujuan_id }}">
+    <input type="hidden" name="action_type" id="actionTypeInput" value="">
+    
+    <!-- Table -->
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between p-5 md:p-6 border-b border-border-light">
+        <h3 class="font-semibold text-neutral-800 text-base">Daftar Siswa Aktif</h3>
+        <span class="text-sm text-neutral-400">
+          {% if ta_asal_id and kelas_asal_id %}{{ list_placements|length }} siswa{% else %}Pilih filter terlebih dahulu{% endif %}
+        </span>
+      </div>
+      
+      {% if ta_asal_id and kelas_asal_id %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-neutral-50 text-neutral-500 text-xs font-medium uppercase tracking-wider">
+              <th class="text-left px-6 py-3.5 w-10">
+                <input type="checkbox" id="selectAll" class="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 cursor-pointer accent-neutral-900">
+              </th>
+              <th class="text-left px-6 py-3.5">NISN</th>
+              <th class="text-left px-6 py-3.5">Nama Lengkap</th>
+              <th class="text-left px-6 py-3.5 hidden md:table-cell">Jenis Kelamin</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border-light">
+            {% for placement in list_placements %}
+            <tr class="hover:bg-neutral-50 transition-colors">
+              <td class="px-6 py-4">
+                <!-- VALUE YANG DIKIRIM ADALAH ID PENEMPATAN KELAS, BUKAN ID SISWA -->
+                <input type="checkbox" name="selected_placements" value="{{ placement.id }}" class="placement-checkbox w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 cursor-pointer accent-neutral-900">
+              </td>
+              <td class="px-6 py-4 font-medium text-neutral-800">{{ placement.siswa.nisn|default:'-' }}</td>
+              <td class="px-6 py-4 text-neutral-600">{{ placement.siswa.nama_lengkap }}</td>
+              <td class="px-6 py-4 text-neutral-600 hidden md:table-cell">
+                {% if placement.siswa.jenis_kelamin == 'L' %}Laki-laki{% else %}Perempuan{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="px-6 py-12 text-center text-neutral-400">
+                <svg class="w-12 h-12 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                Tidak ada siswa aktif di kelas ini.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-12 text-center text-neutral-400">
+        <svg class="w-12 h-12 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p class="font-medium text-neutral-500">Pilih Tahun Ajaran dan Kelas Asal</p>
+        <p class="text-xs mt-1">Untuk menampilkan daftar siswa yang akan diproses</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Floating Bulk Action Bar -->
+    <div id="actionBar" class="fixed bottom-0 left-0 right-0 md:left-64 bg-white/95 backdrop-blur-md border-t border-border-light p-4 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-transform duration-300 translate-y-full">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 max-w-screen-xl mx-auto">
+        <div class="flex items-center gap-3">
+          <span id="selectedCount" class="text-sm font-medium text-neutral-800">0 siswa dipilih</span>
+          <button type="button" onclick="clearSelection()" class="text-xs text-neutral-500 hover:text-red-500 transition-colors">Batal Pilih</button>
+        </div>
+        <div class="flex items-center gap-3">
+          <select name="target_kelas" id="targetKelasDropdown" class="text-xs font-medium bg-neutral-100 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
+            <option value="">-- Pilih Kelas Tujuan --</option>
+            {% for k in list_kelas %}
+            <option value="{{ k.id }}">{{ k.nama_kelas }}{% if k.jurusan %} - {{ k.jurusan.nama_jurusan }}{% endif %}</option>
+            {% endfor %}
+          </select>
+          
+          <!-- Tombol Kenaikan -->
+          <button type="button" onclick="submitAction('naik')" class="inline-flex items-center gap-2 text-xs font-medium text-white bg-neutral-900 px-5 py-2.5 rounded-xl hover:bg-neutral-800 transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+            Proses Kenaikan
+          </button>
+
+          <!-- Tombol Tinggal Kelas -->
+          <button type="button" onclick="submitAction('tinggal')" class="inline-flex items-center gap-2 text-xs font-medium text-red-600 bg-white border border-red-200 px-5 py-2.5 rounded-xl hover:bg-red-50 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            Tandai Tinggal
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.placement-checkbox');
+    const actionBar = document.getElementById('actionBar');
+    const selectedCount = document.getElementById('selectedCount');
+    const actionForm = document.getElementById('actionForm');
+
+    if (selectAll) {
+      selectAll.addEventListener('change', function(e) {
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+        updateActionBar();
+      });
+    }
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        if (selectAll) {
+          selectAll.checked = [...checkboxes].every(c => c.checked);
+          selectAll.indeterminate = ![...checkboxes].every(c => c.checked) && [...checkboxes].some(c => c.checked);
+        }
+        updateActionBar();
+      });
+    });
+
+    function updateActionBar() {
+      const checkedBoxes = document.querySelectorAll('.placement-checkbox:checked');
+      const count = checkedBoxes.length;
+      
+      if (count > 0) {
+        actionBar.classList.remove('translate-y-full');
+        selectedCount.textContent = `${count} siswa dipilih`;
+      } else {
+        actionBar.classList.add('translate-y-full');
+      }
+    }
+
+    window.clearSelection = function() {
+      checkboxes.forEach(cb => cb.checked = false);
+      if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      }
+      updateActionBar();
+    };
+
+    // Fungsi untuk handle klik tombol aksi
+    window.submitAction = function(actionType) {
+      const checkedBoxes = document.querySelectorAll('.placement-checkbox:checked');
+      if (checkedBoxes.length === 0) return;
+
+      const actionInput = document.getElementById('actionTypeInput');
+      const targetKelas = document.getElementById('targetKelasDropdown');
+
+      if (actionType === 'naik') {
+        if (!targetKelas.value) {
+          alert('Silakan pilih Kelas Tujuan terlebih dahulu.');
+          targetKelas.focus();
+          return;
+        }
+        if (!confirm(`Apakah Anda yakin ingin menaikkan ${checkedBoxes.length} siswa ke kelas tujuan?`)) {
+          return;
+        }
+      } else if (actionType === 'tinggal') {
+        if (!confirm(`PERHATIAN!\nAnda akan menandai ${checkedBoxes.length} siswa sebagai "Tinggal Kelas".\nTindakan ini mengubah status kelas mereka saat ini.\n\nLanjutkan?`)) {
+          return;
+        }
+      }
+
+      actionInput.value = actionType;
+      actionForm.submit();
+    };
+  });
+</script>
+{% endblock %}
+{% endblock %}
