@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'akademik',
     'siswa',
+    'accounts',
+    'pengaturan',
     'dashboard',
     'auth.apps.CustomAuthConfig',
     'kesiswaan',
