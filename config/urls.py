@@ -9,6 +9,7 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('pengaturan/', include('pengaturan.urls', namespace='pengaturan')),
     path('auth/', include('auth.urls', namespace='auth')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('siswa/', include('siswa.urls', namespace='siswa')),

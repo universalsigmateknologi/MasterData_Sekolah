@@ -5,13 +5,27 @@
   <aside id="sidebar" class="fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-border-light flex flex-col sidebar-transition -translate-x-full md:translate-x-0 md:sticky md:top-0 md:h-screen md:z-30 shadow-sm md:shadow-none">
     <!-- Sidebar Header -->
     <div class="flex items-center justify-between px-6 py-5 border-b border-border-light flex-shrink-0">
-      <a href="#" class="flex items-center gap-2.5">
-        <div class="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </div>
-        <span class="font-semibold text-lg tracking-tight text-neutral-900">Smart Leadger</span>
+      <a href="{% url 'dashboard:dashboard' %}" class="flex items-center gap-2.5">
+        {% if global_pengaturan %}
+          {% if global_pengaturan.logo %}
+            <img src="{{ global_pengaturan.logo.url }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover shrink-0">
+          {% else %}
+            <div class="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </div>
+          {% endif %}
+          <span class="font-semibold text-lg tracking-tight text-neutral-900 truncate max-w-[150px]">{{ global_pengaturan.nama_program }}</span>
+        {% else %}
+          <!-- Fallback jika database pengaturan masih kosong -->
+          <div class="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </div>
+          <span class="font-semibold text-lg tracking-tight text-neutral-900">Smart Leadger</span>
+        {% endif %}
       </a>
       <button onclick="closeSidebar()" class="md:hidden p-1.5 rounded-lg hover:bg-neutral-100 transition-colors text-neutral-500">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -74,6 +88,18 @@
           <p class="px-3 pt-4 pb-1 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Lainnya</p>
           <a href="{% url 'kesiswaan:cetak_buku_induk' %}" class="block py-1.5 px-3 rounded-lg text-xs text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 transition-all duration-200">Cetak Buku Induk</a>
         </div>
+      </div>
+
+      <!-- Pengaturan (Single Item) -->
+      <div class="pt-4 mt-4 border-t border-border-light">
+        <a href="{% url 'pengaturan:settings' %}" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-all duration-200 group relative">
+          <span class="nav-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-neutral-900 rounded-full opacity-0 transition-opacity"></span>
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Pengaturan</span>
+        </a>
       </div>
 
       <script>
