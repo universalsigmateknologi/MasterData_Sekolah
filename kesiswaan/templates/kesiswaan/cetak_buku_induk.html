@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Cetak Buku Induk{% endblock %}
+
+{% block breadcrumb_active %}Cetak Buku Induk{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4">
+  
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Cetak Buku Induk</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">Unduh dokumen buku induk untuk siswa alumni / lulusan</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-2xl p-4 md:p-6 border border-border-light shadow-sm">
+    <form method="get" class="flex flex-col sm:flex-row gap-3">
+      <div class="flex-1 flex items-center gap-2 bg-neutral-100 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-neutral-300 focus-within:bg-white transition-all">
+        <svg class="w-4 h-4 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" name="search" value="{{ search_query|default:'' }}" placeholder="Cari nama alumni, NISN..." class="bg-transparent text-sm outline-none w-full text-neutral-700 placeholder-neutral-400">
+      </div>
+
+      <select name="ta_filter" class="text-xs font-medium bg-white border border-border-light rounded-xl px-3 py-2 outline-none text-neutral-600 cursor-pointer">
+        <option value="">Semua Tahun Ajaran</option>
+        {% for ta in list_ta %}
+        <option value="{{ ta.id }}" {% if ta_filter == ta.id|stringformat:"s" %}selected{% endif %}>{{ ta.tahun }} - {{ ta.semester }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="text-xs font-medium text-white bg-neutral-900 px-4 py-2 rounded-xl hover:bg-neutral-800 transition-all">Terapkan</button>
+      <a href="{% url 'kesiswaan:cetak_buku_induk' %}" class="text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2 rounded-xl hover:bg-neutral-200 transition-all text-center">Reset</a>
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+    <div class="flex items-center justify-between p-5 md:p-6 border-b border-border-light">
+      <h3 class="font-semibold text-neutral-800 text-base">Daftar Alumni (Lulus)</h3>
+      <span class="text-sm text-neutral-400">{{ siswa_list|length }} siswa</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-neutral-50 text-neutral-500 text-xs font-medium uppercase tracking-wider">
+            <th class="text-left px-6 py-3.5">NISN</th>
+            <th class="text-left px-6 py-3.5">Nama Lengkap</th>
+            <th class="text-left px-6 py-3.5 hidden md:table-cell">Jurusan Terakhir</th>
+            <th class="text-left px-6 py-3.5">Tgl Keluar / Lulus</th>
+            <th class="text-center px-6 py-3.5">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border-light">
+          {% for siswa in siswa_list %}
+          <tr class="hover:bg-neutral-50 transition-colors">
+            <td class="px-6 py-4 font-medium text-neutral-800">{{ siswa.nisn|default:'-' }}</td>
+            <td class="px-6 py-4 text-neutral-600">{{ siswa.nama_lengkap }}</td>
+            <td class="px-6 py-4 text-neutral-500 hidden md:table-cell">
+              {# Ambil kelas terakhir dari riwayat kelas #}
+              {% with last_class=siswa.riwayat_kelas.last %}
+                {% if last_class %}{{ last_class.kelas.nama_kelas }}{% if last_class.kelas.jurusan %} - {{ last_class.kelas.jurusan.nama_jurusan }}{% endif %}{% else %}-{% endif %}
+              {% endwith %}
+            </td>
+            <td class="px-6 py-4 text-neutral-500">{{ siswa.tanggal_keluar|date:'d M Y'|default:'-' }}</td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-center">
+                {# TODO: Ganti URL ini dengan View generator PDF jika sudah dibuat #}
+                <a href="#" onclick="alert('Fitur generate PDF akan diintegrasikan menggunakan library WeasyPrint/Reportlab pada tahap selanjutnya.')" class="inline-flex items-center gap-2 text-xs font-medium text-neutral-700 bg-neutral-100 border border-border-light px-3 py-2 rounded-lg hover:bg-neutral-200 transition-all">
+                  <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  Unduh PDF
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-neutral-400">
+              <svg class="w-12 h-12 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Belum ada data siswa lulusan
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

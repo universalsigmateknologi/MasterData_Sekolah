@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}Kelulusan Massal{% endblock %}
+
+{% block breadcrumb_active %}Kelulusan Massal{% endblock %}
+
+{% block content %}
+<div class="flex-1 space-y-4 pb-28">
+
+  <!-- Django Messages -->
+  {% if messages %}
+  <div id="alertContainer" class="space-y-2">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl border text-sm animate-slide-down
+      {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+      {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+      {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}" role="alert">
+      {% if message.tags == 'success' %}
+        <svg class="w-4 h-4 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      {% else %}
+        <svg class="w-4 h-4 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      {% endif %}
+      <span>{{ message }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-auto p-0.5 rounded-lg hover:opacity-70 transition-opacity">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Kelulusan Massal</h1>
+      <p class="text-sm text-neutral-400 mt-0.5">Proses kelulusan untuk siswa tingkat akhir (Kelas 12)</p>
+    </div>
+    <a href="{% url 'kesiswaan:penempatan_kelas_list' %}" class="inline-flex items-center gap-2 text-xs font-medium text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-xl hover:bg-neutral-200 transition-all w-fit">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      Kembali
+    </a>
+  </div>
+
+  <!-- Form Aksi Utama (POST) -->
+  <form method="POST" id="actionForm" action="{% url 'kesiswaan:kelulusan_massal' %}">
+    {% csrf_token %}
+    
+    <!-- Table -->
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between p-5 md:p-6 border-b border-border-light">
+        <div>
+          <h3 class="font-semibold text-neutral-800 text-base">Calon Lulusan Tingkat 12</h3>
+          {% if active_ta %}
+          <p class="text-xs text-neutral-400 mt-0.5">Tahun Ajaran: {{ active_ta.tahun }} - {{ active_ta.semester }}</p>
+          {% endif %}
+        </div>
+        <span class="text-sm text-neutral-400">
+          {% if active_ta %}{{ list_placements|length }} siswa{% else %}-{% endif %}
+        </span>
+      </div>
+      
+      {% if active_ta %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-neutral-50 text-neutral-500 text-xs font-medium uppercase tracking-wider">
+              <th class="text-left px-6 py-3.5 w-10">
+                <input type="checkbox" id="selectAll" class="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 cursor-pointer accent-neutral-900">
+              </th>
+              <th class="text-left px-6 py-3.5">NISN</th>
+              <th class="text-left px-6 py-3.5">Nama Lengkap</th>
+              <th class="text-left px-6 py-3.5 hidden md:table-cell">Kelas Saat Ini</th>
+              <th class="text-left px-6 py-3.5 hidden lg:table-cell">Jurusan</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border-light">
+            {% for placement in list_placements %}
+            <tr class="hover:bg-neutral-50 transition-colors">
+              <td class="px-6 py-4">
+                <input type="checkbox" name="selected_placements" value="{{ placement.id }}" class="placement-checkbox w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500 cursor-pointer accent-neutral-900">
+              </td>
+              <td class="px-6 py-4 font-medium text-neutral-800">{{ placement.siswa.nisn|default:'-' }}</td>
+              <td class="px-6 py-4 text-neutral-600">{{ placement.siswa.nama_lengkap }}</td>
+              <td class="px-6 py-4 text-neutral-600 hidden md:table-cell">{{ placement.kelas.nama_kelas }}</td>
+              <td class="px-6 py-4 text-neutral-500 hidden lg:table-cell">
+                {% if placement.kelas.jurusan %}{{ placement.kelas.jurusan.nama_jurusan }}{% else %}-{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="px-6 py-12 text-center text-neutral-400">
+                <svg class="w-12 h-12 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Tidak ada siswa kelas 12 yang berstatus aktif pada TA ini.<br>
+                <span class="text-xs">Mereka mungkin sudah diproses kelulusannya sebelumnya.</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-12 text-center text-neutral-400">
+        <svg class="w-12 h-12 mx-auto mb-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p class="font-medium text-neutral-500">Tidak dapat menampilkan data</p>
+        <p class="text-xs mt-1">Pastikan Tahun Ajaran dengan Semester <span class="font-semibold">Genap</span> sedang diaktifkan di pengaturan Master Data.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Floating Bulk Action Bar -->
+    <div id="actionBar" class="fixed bottom-0 left-0 right-0 md:left-64 bg-white/95 backdrop-blur-md border-t border-border-light p-4 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-transform duration-300 translate-y-full">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 max-w-screen-xl mx-auto">
+        <div class="flex items-center gap-3">
+          <span id="selectedCount" class="text-sm font-medium text-neutral-800">0 siswa dipilih</span>
+          <button type="button" onclick="clearSelection()" class="text-xs text-neutral-500 hover:text-red-500 transition-colors">Batal Pilih</button>
+        </div>
+        <div class="flex items-center gap-3">
+          <div>
+            <label class="block text-[10px] font-medium text-neutral-400 mb-1 text-right">Tanggal SK Kelulusan</label>
+            <input type="date" name="tanggal_sk" id="tanggalSkInput" required class="text-xs font-medium bg-neutral-100 border border-border-light rounded-xl px-3 py-2.5 outline-none text-neutral-700 cursor-pointer focus:ring-2 focus:ring-neutral-300">
+          </div>
+          
+          <button type="button" onclick="submitKelulusan()" class="inline-flex items-center gap-2 text-xs font-medium text-white bg-green-700 px-5 py-2.5 rounded-xl hover:bg-green-800 transition-all shadow-sm mt-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Proses Kelulusan
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.placement-checkbox');
+    const actionBar = document.getElementById('actionBar');
+    const selectedCount = document.getElementById('selectedCount');
+    const actionForm = document.getElementById('actionForm');
+
+    if (selectAll) {
+      selectAll.addEventListener('change', function(e) {
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+        updateActionBar();
+      });
+    }
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        if (selectAll) {
+          selectAll.checked = [...checkboxes].every(c => c.checked);
+          selectAll.indeterminate = ![...checkboxes].every(c => c.checked) && [...checkboxes].some(c => c.checked);
+        }
+        updateActionBar();
+      });
+    });
+
+    function updateActionBar() {
+      const checkedBoxes = document.querySelectorAll('.placement-checkbox:checked');
+      const count = checkedBoxes.length;
+      
+      if (count > 0) {
+        actionBar.classList.remove('translate-y-full');
+        selectedCount.textContent = `${count} siswa dipilih`;
+      } else {
+        actionBar.classList.add('translate-y-full');
+      }
+    }
+
+    window.clearSelection = function() {
+      checkboxes.forEach(cb => cb.checked = false);
+      if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      }
+      updateActionBar();
+    };
+
+    window.submitKelulusan = function() {
+      const checkedBoxes = document.querySelectorAll('.placement-checkbox:checked');
+      if (checkedBoxes.length === 0) return;
+
+      const tanggalSk = document.getElementById('tanggalSkInput').value;
+      if (!tanggalSk) {
+        alert('Tanggal SK Kelulusan wajib diisi terlebih dahulu.');
+        document.getElementById('tanggalSkInput').focus();
+        return;
+      }
+
+      if (!confirm(`PERHATIAN!\nAnda akan memproses kelulusan untuk ${checkedBoxes.length} siswa.\nStatus mereka akan berubah menjadi "Lulus" secara permanen.\n\nLanjutkan?`)) {
+        return;
+      }
+
+      actionForm.submit();
+    };
+  });
+</script>
+{% endblock %}
+{% endblock %}

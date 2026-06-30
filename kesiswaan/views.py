@@ -261,3 +261,82 @@ def kenaikan_kelas_view(request):
     }
     
     return render(request, 'kesiswaan/kenaikan_kelas.html', context)
+
+def kelulusan_massal_view(request):
+    # Cari TA yang sedang aktif DAN semesternya Genap (karena kelulusan hanya di akhir genap)
+    active_ta = TahunAjaran.objects.filter(is_aktif=True, semester='Genap').first()
+
+    # ------------------- POST LOGIC (PROSES) -------------------
+    if request.method == 'POST':
+        selected_placement_ids = request.POST.getlist('selected_placements')
+        tanggal_sk = request.POST.get('tanggal_sk')
+
+        if not selected_placement_ids:
+            messages.error(request, 'Pilih minimal satu siswa untuk diproses kelulusan.')
+        elif not tanggal_sk:
+            messages.error(request, 'Tanggal SK Kelulusan wajib diisi.')
+        elif not active_ta:
+            messages.error(request, 'Tidak dapat memproses. Tidak ada Tahun Ajaran Genap yang sedang aktif.')
+        else:
+            try:
+                # Ambil data penempatan kelas kelas 12 yang dipilih
+                placements = PenempatanKelas.objects.filter(id__in=selected_placement_ids)
+                
+                # 1. Ubah status penempatan kelas menjadi 'Lulus'
+                placements.update(keterangan='Lulus')
+                
+                # 2. Ubah status siswa menjadi 'Lulus' dan isi tanggal_keluar
+                siswa_ids = placements.values_list('siswa_id', flat=True)
+                updated_siswa = Siswa.objects.filter(id__in=siswa_ids).update(
+                    status_siswa='Lulus',
+                    tanggal_keluar=tanggal_sk
+                )
+                
+                messages.success(request, f'Berhasil memproses kelulusan {updated_siswa} siswa.')
+            except Exception as e:
+                messages.error(request, f'Terjadi kesalahan sistem: {str(e)}')
+
+            return redirect(request.get_full_path())
+
+    # ------------------- GET LOGIC (DISPLAY) -------------------
+    list_placements = []
+    
+    # Jika ada TA aktif semester genap, langsung ambil data kelas 12
+    if active_ta:
+        list_placements = PenempatanKelas.objects.select_related(
+            'siswa', 'kelas__jurusan', 'tahun_ajaran'
+        ).filter(
+            tahun_ajaran=active_ta,
+            kelas__tingkat=12,
+            keterangan='Aktif'
+        ).order_by('kelas__nama_kelas', 'siswa__nama_lengkap')
+
+    context = {
+        'active_ta': active_ta, # Dikirim untuk pengecekan di template
+        'list_placements': list_placements,
+    }
+    
+    return render(request, 'kesiswaan/kelulusan_massal.html', context)
+
+
+def cetak_buku_induk_view(request):
+    ta_filter = request.GET.get('ta_filter', '')
+
+    # Base queryset: Siswa yang sudah dinyatakan Lulus
+    queryset = Siswa.objects.filter(status_siswa='Lulus').order_by('-tanggal_keluar', 'nama_lengkap')
+
+    # Jika filter TA dipilih, hanya tampilkan siswa yang lulus di TA tersebut
+    if ta_filter:
+        lulus_siswa_ids = PenempatanKelas.objects.filter(
+            tahun_ajaran_id=ta_filter,
+            keterangan='Lulus'
+        ).values_list('siswa_id', flat=True)
+        queryset = queryset.filter(id__in=lulus_siswa_ids)
+
+    context = {
+        'ta_filter': ta_filter,
+        'list_ta': TahunAjaran.objects.all().order_by('-tahun'),
+        'siswa_list': queryset, # Ditampilkan semua (tanpa pagination karena untuk arsip)
+    }
+    
+    return render(request, 'kesiswaan/cetak_buku_induk.html', context)

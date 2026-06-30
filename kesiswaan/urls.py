@@ -7,6 +7,8 @@ urlpatterns = [
     # ... url lainnya jika ada ...
     path('', views.penempatan_kelas_list, name='penempatan_kelas_list'),
     path('kenaikan-kelas/', views.kenaikan_kelas_view, name='kenaikan_kelas'), # Route Baru
+    path('kelulusan-massal/', views.kelulusan_massal_view, name='kelulusan_massal'), # Baru
+    path('cetak-buku-induk/', views.cetak_buku_induk_view, name='cetak_buku_induk'), # Baru
     path('mutasi/', views.mutasi_siswa_list, name='mutasi_list'),
     path('mutasi/tambah/', views.mutasi_create, name='mutasi_create'),
 ]
